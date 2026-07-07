@@ -1,2 +1,2 @@
-# AR
-A/R System
+# A/R System
+The A/R system currently works with two applications, the A/R Formatter and the A/R Processor. The formatter is currently a desktop app, built with Electron, that uses Node.js and ExcelJS to process existing Weekly 7 Spreadsheets. It creates a new file of only the isolated contracts (within a given range), flattens all formulas, and adds a blank top row (this is necessary due to the AR Proc app). The processor is a Python script, running in a Flask server, which takes in the formatted files, calculates outstanding Accounts Receivable, and produces an output PDF for download. 
