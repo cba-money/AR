@@ -1,25 +1,41 @@
 {
   "name": "ar-desktop-suite",
+  "private": true,
   "version": "0.0.1",
-  "description": "Unified Accounts Receivable Desktop Suite",
-  "main": "main.js",
-  "author": "Blazed Labs LLC",
-  "license": "MIT",
+  "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron .",
-    "build": "electron-builder"
+    "dev": "npm-run-all --parallel dev:react dev:electron",
+    "dev:react": "vite",
+    "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "transpile:electron": "tsc --project src/electron/tsconfig.json",
+    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac --arm64",
+    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64",
+    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64",
+    "test:e2e": "playwright test",
+    "test:unit": "vitest src"
   },
   "dependencies": {
-    "electron-log": "^5.0.0",
-    "electron-store": "^8.2.0",
-    "exceljs": "^4.4.0"
+    "os-utils": "^0.0.14",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.47.2",
+    "@types/node": "^22.5.5",
+    "@types/os-utils": "^0.0.4",
+    "@types/react": "^18.3.8",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "cross-env": "^7.0.3",
     "electron": "^43.1.0",
-    "electron-builder": "^26.0.12"
-  },
-  "allowScripts": {
-    "electron@38.8.6": true
+    "electron-builder": "^25.0.5",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.7",
+    "vitest": "^2.1.1"
   }
 }

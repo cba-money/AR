@@ -28,6 +28,10 @@ compile_commands.json
 /npm/path.txt
 /npm/checksums.json
 
+# electron dist
+/dist-electron/
+/dist-react/
+
 .npmrc
 
 # Generated API definitions
