@@ -1,14 +1,16 @@
+"use client"
+
 import { useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { useStatistics } from './useStatistics.ts';
+//import { useStatistics } from './useStatistics.ts';
 
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { DatePicker } from "@/components/DatePicker.tsx";
 
 function App() {
-  const staticData = useStaticData();
-  const statistics = useStatistics(10);
+  //const staticData = useStaticData();
+  //const statistics = useStatistics(10);
+  /*
   const [activeView, setActiveView] = useState<View>('CPU');
   const cpuUsages = useMemo(
     () => statistics.map((stat) => stat.cpuUsage),
@@ -36,13 +38,14 @@ function App() {
   useEffect(() => {
     return window.electron.subscribeChangeView((view) => setActiveView(view));
   }, []);
+*/
 
   return (
     <div className="App">
       <Header />
       <div className="main">
         <div>
-          <SelectOption
+          {/* <SelectOption
             onClick={() => setActiveView('CPU')}
             title="CPU"
             view="CPU"
@@ -63,12 +66,10 @@ function App() {
             subTitle={(staticData?.totalStorage.toString() ?? '') + ' GB'}
             data={storageUsages}
           />
+          */}
         </div>
         <div className="mainGrid">
           <Input placeholder="Enter text" />
-          <div className="flex flex-col gap-2 mt-5">
-          <DatePicker />
-          </div>
         </div>
       </div>
     </div>
@@ -97,6 +98,7 @@ function Header() {
   );
 }
 
+/*
 function useStaticData() {
   const [staticData, setStaticData] = useState<StaticData | null>(null);
 
@@ -108,5 +110,6 @@ function useStaticData() {
 
   return staticData;
 }
+*/
 
 export default App;
