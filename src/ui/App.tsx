@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import reactLogo from './assets/react.svg';
 import './App.css';
 import { useStatistics } from './useStatistics.ts';
-import { Chart } from './Chart.tsx';
+
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { DatePicker } from "@/components/DatePicker.tsx";
 
 function App() {
   const staticData = useStaticData();
@@ -63,11 +65,10 @@ function App() {
           />
         </div>
         <div className="mainGrid">
-          <Chart
-            selectedView={activeView}
-            data={activeUsages}
-            maxDataPoints={10}
-          />
+          <Input placeholder="Enter text" />
+          <div className="flex flex-col gap-2 mt-5">
+          <DatePicker />
+          </div>
         </div>
       </div>
     </div>
@@ -82,33 +83,16 @@ function SelectOption(props: {
   onClick: () => void;
 }) {
   return (
-    <button className="selectOption" onClick={props.onClick}>
-      <div className="selectOptionTitle">
-        <div>{props.title}</div>
-        <div>{props.subTitle}</div>
-      </div>
-      <div className="selectOptionChart">
-        <Chart selectedView={props.view} data={props.data} maxDataPoints={10} />
-      </div>
-    </button>
+    <Button variant="outline">
+      Hello World
+    </Button>
   );
 }
 
 function Header() {
   return (
     <header>
-      <button
-        id="close"
-        onClick={() => window.electron.sendFrameAction('CLOSE')}
-      />
-      <button
-        id="minimize"
-        onClick={() => window.electron.sendFrameAction('MINIMIZE')}
-      />
-      <button
-        id="maximize"
-        onClick={() => window.electron.sendFrameAction('MAXIMIZE')}
-      />
+      
     </header>
   );
 }
