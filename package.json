@@ -4,6 +4,9 @@
   "version": "0.0.2",
   "type": "module",
   "main": "dist-electron/main.js",
+  "description": "A/R formatter and processor for bulk Weekly 7 file batches, plus other utilities.",
+  "author": "Tyler Ruff <rufft@cbamoney.com> (https://ar.cbautils.com)",
+  "license": "MIT",
   "scripts": {
     "dev": "npm-run-all --parallel dev:react dev:electron",
     "dev:react": "vite",
