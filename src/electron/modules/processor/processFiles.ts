@@ -1,0 +1,411 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import ExcelJS from 'exceljs';
+import puppeteer from 'puppeteer';
+
+// --- Interfaces ---
+export interface ProcessResult {
+    company: string;
+    rows: number;
+    grandTotal: number;
+    monthlyTotals: Record<number, number>;
+    pdfSize: number;
+    fileName: string;
+}
+
+interface CellData {
+    value: any;
+    format: string | null;
+}
+
+interface RowData {
+    rowNum: number;
+    cells: CellData[];
+    dateFormat?: string | null;
+}
+
+interface SortableRow {
+    idx: number;
+    date: Date;
+    dealer: string;
+    contract: string;
+    rowData: RowData;
+}
+
+// --- Helper Functions ---
+
+/**
+ * Parses a date string formatted as MM/DD/YY or MM/DD/YYYY
+ */
+function parseDateString(dateStr: string): Date | null {
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return null;
+    let year = parseInt(parts[2], 10);
+    if (year < 100) year += 2000;
+    const month = parseInt(parts[0], 10) - 1;
+    const day = parseInt(parts[1], 10);
+    const d = new Date(year, month, day);
+    return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Extracts numeric value from currency strings
+ */
+/*
+function parseCurrency(val: any): number {
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    const cleanStr = String(val).replace(/[$,]/g, '').trim();
+    const parsed = parseFloat(cleanStr);
+    return isNaN(parsed) ? 0 : parsed;
+}
+*/
+/**
+ * Extracts numeric value from currency strings or ExcelJS formula objects
+ */
+function parseCurrency(val: any): number {
+    // 1. Handle ExcelJS formula objects ({ formula: '...', result: 123 })
+    if (val && typeof val === 'object' && 'result' in val) {
+        val = val.result;
+    }
+
+    // 2. Existing parsing logic
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    
+    const cleanStr = String(val).replace(/[$,]/g, '').trim();
+    const parsed = parseFloat(cleanStr);
+    return isNaN(parsed) ? 0 : parsed;
+}
+
+
+/**
+ * Finds the commission column by searching row 2
+ */
+function findCommissionColumn(worksheet: ExcelJS.Worksheet): number | null {
+    const row = worksheet.getRow(2);
+    let targetCol: number | null = null;
+    row.eachCell((cell, colNumber) => {
+        if (cell.value && String(cell.value).toLowerCase().includes('commission')) {
+            targetCol = colNumber;
+        }
+    });
+    return targetCol;
+}
+
+/**
+ * Identifies the exact yellow color code from column C
+ */
+function getYellowColorCode(worksheet: ExcelJS.Worksheet): string {
+    const yellowCodes: Record<string, number> = {};
+    const maxRow = Math.min(20, worksheet.rowCount);
+    
+    for (let rowNum = 3; rowNum <= maxRow; rowNum++) {
+        const cell = worksheet.getCell(rowNum, 3);
+        const fill = cell.fill as ExcelJS.FillPattern;
+        
+        if (fill && fill.type === 'pattern' && fill.fgColor?.argb) {
+            const color = fill.fgColor.argb;
+            if (color.toUpperCase().includes('FFFF')) {
+                yellowCodes[color] = (yellowCodes[color] || 0) + 1;
+            }
+        }
+    }
+    
+    if (Object.keys(yellowCodes).length > 0) {
+        return Object.keys(yellowCodes).reduce((a, b) => yellowCodes[a] > yellowCodes[b] ? a : b);
+    }
+    return 'FFFFFF00';
+}
+
+/**
+ * Generates a PDF locally using standard Puppeteer
+ */
+export async function generatePdfLocally(html: string, outputPdfPath: string): Promise<void> {
+    const browser = await puppeteer.launch({
+        headless: true,
+        // Optional: in an Electron environment, you might need to point this to the system Chrome
+        // executablePath: '/path/to/chrome',
+    });
+
+    try {
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: "load" });
+
+        await page.pdf({
+            path: outputPdfPath,
+            format: "A4",
+            printBackground: true,
+            margin: {
+                top: "20px",
+                right: "20px",
+                bottom: "20px",
+                left: "20px"
+            }
+        });
+    } finally {
+        await browser.close();
+    }
+}
+
+// --- Main Processing Function ---
+
+/**
+ * Processes the AR Excel file and generates a PDF report.
+ * * @param filePath Full absolute path to the Excel file
+ * @param givenDate The cutoff Date object
+ * @param monthsToProcess Array of integers representing months (e.g., [1, 2, 3])
+ */
+export async function processARFile(
+    filePath: string, 
+    givenDate: Date, 
+    monthsToProcess: number[]
+): Promise<ProcessResult | null> {
+    
+    console.log(`\n${'='.repeat(100)}\nPROCESSING: ${filePath}\n${'='.repeat(100)}`);
+    
+    const fileName = path.basename(filePath);
+    const companyName = fileName.split('_').length > 1 ? fileName.split('_')[1] : fileName;
+    const outputPdfPath = filePath.replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf');
+
+    const workbook = new ExcelJS.Workbook();
+    try {
+        await workbook.xlsx.readFile(filePath);
+    } catch (e) {
+        console.error("Failed to read Excel file", e);
+        return null;
+    }
+
+    const ws = workbook.worksheets[0];
+    if (!ws) return null;
+
+    const commissionCol = findCommissionColumn(ws);
+    if (!commissionCol) {
+        console.log("✗ No Commission column found");
+        return null;
+    }
+    console.log(`✓ Commission column: Column ${commissionCol}`);
+
+    const yellowCode = getYellowColorCode(ws);
+    console.log(`✓ Yellow color code identified: ${yellowCode}`);
+
+    const commPlus1 = commissionCol + 1;
+    const commPlus4 = commissionCol + 4;
+
+    const dataRows: RowData[] = [];
+
+    // Iterate rows starting from 3
+    for (let rowNum = 3; rowNum <= ws.rowCount; rowNum++) {
+        const row = ws.getRow(rowNum);
+        
+        const cellC = row.getCell(3);
+        const cellF = row.getCell(commPlus1);
+        const cellI = row.getCell(commPlus4);
+        
+        let isYellow = false;
+        const fill = cellC.fill as ExcelJS.FillPattern;
+        if (fill && fill.type === 'pattern' && fill.fgColor?.argb) {
+            const color = fill.fgColor.argb.toUpperCase();
+            if (color === yellowCode.toUpperCase() || color.includes('FFFF')) {
+                isYellow = true;
+            }
+        }
+
+        if (!isYellow) continue;
+
+        let futureDeducted = false;
+        const colIValue = cellI.value ? String(cellI.value) : '';
+        const colFValue = cellF.value;
+
+        // DEDUCTED check
+        if (colIValue.includes('DEDUCTED')) {
+            const datePart = colIValue.split('DEDUCTED').pop()?.split('-')[0]?.trim();
+            if (datePart) {
+                const deductDate = parseDateString(datePart);
+                if (!deductDate) {
+                    throw new Error(`Row ${rowNum}: DEDUCTED present but date could not be parsed from '${colIValue}'`);
+                }
+                if (deductDate <= givenDate) continue;
+                futureDeducted = true;
+            }
+        }
+
+        if (!futureDeducted) {
+            const colFStr = String(colFValue || '').toUpperCase();
+            if (colFStr.includes('VOID') || colFStr.includes('REJECTED')) continue;
+
+            if (colFValue instanceof Date && colFValue <= givenDate) continue;
+            if (colIValue && colFValue instanceof Date && colFValue <= givenDate) continue;
+        }
+
+        // Collect row data
+        const cellsData: CellData[] = [];
+        for (let colNum = 1; colNum <= commissionCol; colNum++) {
+            const cell = row.getCell(colNum);
+            cellsData.push({
+                value: cell.value,
+                format: colNum === 1 ? (cell.numFmt || null) : null
+            });
+        }
+
+        dataRows.push({
+            rowNum,
+            cells: cellsData,
+            dateFormat: cellsData[0].format
+        });
+    }
+
+    console.log(`✓ Rows kept after filtering: ${dataRows.length}`);
+    if (dataRows.length === 0) {
+        console.log("⚠ No rows to display after filtering");
+    }
+
+    // Sort Data
+    const dataForSort: SortableRow[] = dataRows.map((rowData, idx) => {
+        const dateVal = rowData.cells[0]?.value;
+        const parsedDate = dateVal instanceof Date ? dateVal : new Date(2099, 0, 1);
+        const dealerVal = rowData.cells[2]?.value ? String(rowData.cells[2].value) : '';
+        const contractVal = rowData.cells[3]?.value ? String(rowData.cells[3].value) : '';
+
+        return { idx, date: parsedDate, dealer: dealerVal, contract: contractVal, rowData };
+    });
+
+    dataForSort.sort((a, b) => {
+        if (a.date.getTime() !== b.date.getTime()) return a.date.getTime() - b.date.getTime();
+        if (a.dealer !== b.dealer) return a.dealer.localeCompare(b.dealer);
+        return a.contract.localeCompare(b.contract);
+    });
+
+    const rowsSorted = dataForSort.map(item => item.rowData);
+    
+    // Aggregations
+    const monthlyTotals: Record<number, number> = {};
+    monthsToProcess.forEach(m => monthlyTotals[m] = 0.0);
+
+    let directSum = 0.0;
+
+    rowsSorted.forEach(row => {
+        const dateVal = row.cells[0]?.value;
+        const commVal = row.cells[commissionCol - 1]?.value;
+        
+        if (dateVal instanceof Date && commVal !== undefined && commVal !== null) {
+            const month = dateVal.getMonth() + 1; // JS months are 0-11, map to 1-12
+            const commNum = parseCurrency(commVal);
+
+            if (monthlyTotals.hasOwnProperty(month)) {
+                monthlyTotals[month] += commNum;
+            }
+        }
+        
+        if (commVal) {
+            directSum += parseCurrency(commVal);
+        }
+    });
+
+    const monthlySum = Object.values(monthlyTotals).reduce((sum, val) => sum + val, 0);
+    const grandTotal = monthlySum; // According to python logic, grandTotal = sum of monthly_totals
+
+    console.log(`✓ Verification:`);
+    console.log(`  - Direct sum of commissions:  $${directSum.toFixed(2)}`);
+    console.log(`  - Sum of monthly totals:     $${monthlySum.toFixed(2)}`);
+    console.log(`  - Grand total:               $${grandTotal.toFixed(2)}`);
+
+    if (Math.abs(directSum - monthlySum) > 0.01 || Math.abs(directSum - grandTotal) > 0.01) {
+        console.log(`✗ VERIFICATION FAILED - Totals don't match!`);
+        return null;
+    }
+
+    // HTML Generation
+    const monthNames: Record<number, string> = {
+        1: 'JANUARY', 2: 'FEBRUARY', 3: 'MARCH', 4: 'APRIL',
+        5: 'MAY', 6: 'JUNE', 7: 'JULY', 8: 'AUGUST',
+        9: 'SEPTEMBER', 10: 'OCTOBER', 11: 'NOVEMBER', 12: 'DECEMBER'
+    };
+
+    let htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { font-family: Arial, sans-serif; font-size: 10pt; margin: 15px; }
+h2 { margin-top: 0; margin-bottom: 15px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #999; padding: 6px; text-align: left; font-size: 10pt; }
+th { background-color: #333; color: white; font-weight: bold; }
+tr:nth-child(even) { background-color: #f9f9f9; }
+.total-row { font-weight: bold; background-color: #e8e8e8; border-top: 3px solid #000; border-bottom: 3px solid #000; }
+.grand-total { font-weight: bold; background-color: #d0d0d0; border-top: 3px solid #000; border-bottom: 3px solid #000; }
+.number { text-align: right; font-family: monospace; }
+</style>
+</head>
+<body>
+<h2>${companyName} A/R to ${givenDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</h2>
+<table>
+<tr><th>Date</th><th>Agent</th><th>Dealer</th><th>Contract</th><th>Commission</th></tr>
+`;
+
+    const monthsAdded = new Set<number>();
+
+    rowsSorted.forEach((rowData, idx) => {
+        const cells = rowData.cells;
+        const dateVal = cells[0]?.value;
+        const dateStr = dateVal instanceof Date ? dateVal.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : String(dateVal || '');
+        const agentStr = cells[1]?.value ? String(cells[1].value) : '';
+        const dealerStr = cells[2]?.value ? String(cells[2].value) : '';
+        const contractStr = cells[3]?.value ? String(cells[3].value) : '';
+        
+        const commVal = cells[commissionCol - 1]?.value;
+        const commStr = typeof commVal === 'number' || !isNaN(parseCurrency(commVal)) 
+            ? parseCurrency(commVal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+            : String(commVal || '');
+
+        htmlContent += `<tr><td>${dateStr}</td><td>${agentStr}</td><td>${dealerStr}</td><td>${contractStr}</td><td class="number">${commStr}</td></tr>\n`;
+
+        const currentMonth = dateVal instanceof Date ? dateVal.getMonth() + 1 : null;
+        let nextMonth: number | null = null;
+        
+        if (idx + 1 < rowsSorted.length) {
+            const nextDate = rowsSorted[idx + 1].cells[0]?.value;
+            nextMonth = nextDate instanceof Date ? nextDate.getMonth() + 1 : null;
+        }
+
+        if (currentMonth && (nextMonth === null || nextMonth !== currentMonth)) {
+            if (!monthsAdded.has(currentMonth) && monthsToProcess.includes(currentMonth)) {
+                const monthTotal = monthlyTotals[currentMonth] || 0;
+                const formattedTotal = monthTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                htmlContent += `<tr class="total-row"><td>${monthNames[currentMonth]}</td><td></td><td></td><td></td><td class="number">${formattedTotal}</td></tr>\n`;
+                monthsAdded.add(currentMonth);
+            }
+        }
+    });
+
+    const formattedGrandTotal = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    htmlContent += `<tr class="grand-total"><td>GRAND TOTAL</td><td></td><td></td><td></td><td class="number">${formattedGrandTotal}</td></tr>\n`;
+    htmlContent += '</table></body></html>';
+
+    // Generate the PDF Locally
+    try {
+        await generatePdfLocally(htmlContent, outputPdfPath);
+        
+        if (fs.existsSync(outputPdfPath)) {
+            const pdfSize = fs.statSync(outputPdfPath).size;
+            console.log(`✓ PDF created: ${path.basename(outputPdfPath)} (${pdfSize.toLocaleString()} bytes)`);
+            
+            return {
+                company: companyName,
+                rows: rowsSorted.length,
+                grandTotal: grandTotal,
+                monthlyTotals: monthlyTotals,
+                pdfSize: pdfSize,
+                fileName: outputPdfPath
+            };
+        } else {
+            console.log(`✗ PDF creation failed (File not found after generation)`);
+            return null;
+        }
+    } catch (error) {
+        console.error(`✗ Error generating PDF:`, error);
+        return null;
+    }
+}

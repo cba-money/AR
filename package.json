@@ -59,5 +59,9 @@
     "typescript": "^5.9.3",
     "vite": "^5.4.7",
     "vitest": "^2.1.1"
+  },
+  "allowScripts": {
+    "puppeteer@25.3.0": true,
+    "esbuild@0.21.5": true
   }
 }
