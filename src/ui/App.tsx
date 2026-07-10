@@ -128,6 +128,9 @@ import {
 
 import Dashboard from "@/pages/Dashboard.tsx";
 import About from "@/pages/About.tsx";
+import SettingsPage from "@/pages/Settings.tsx";
+import Reports from "@/pages/Reports.tsx";
+import Utilities from "@/pages/Utilities.tsx";
 
 export default function App() {
   const [page, setPage] = useState('dashboard');
@@ -166,12 +169,12 @@ export default function App() {
             Weekly 7 Validator
           </Button>
 
-          <Button variant="ghost" className="w-full justify-start">
+          <Button onClick={() => setPage('reports')} variant="ghost" className="w-full justify-start">
             <BarChart3 className="mr-2 h-4 w-4" />
             Reports
           </Button>
 
-          <Button variant="ghost" className="w-full justify-start">
+          <Button onClick={() => setPage('utilities')} variant="ghost" className="w-full justify-start">
             <Wrench className="mr-2 h-4 w-4" />
             Utilities
           </Button>
@@ -190,7 +193,9 @@ export default function App() {
 
         {page === "dashboard" && <Dashboard />}
         {page === "about" && <About />}
-        {page === "settings" && <Settings />}
+        {page === "settings" && <SettingsPage />}
+        {page === "reports" && <Reports />}
+        {page === "utilities" && <Utilities />}
 
       </main>
 
