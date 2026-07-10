@@ -396,7 +396,6 @@ Next Workbook
 
 Multiple reports processed simultaneously where system resources permit.
 
-
 ## Development Phases
 ### Phase 1: Project Foundation
 * Create a new Electron application shell.
