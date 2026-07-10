@@ -131,6 +131,7 @@ import About from "@/pages/About.tsx";
 import SettingsPage from "@/pages/Settings.tsx";
 import Reports from "@/pages/Reports.tsx";
 import Utilities from "@/pages/Utilities.tsx";
+import Process from "@/pages/Process.tsx";
 
 export default function App() {
   const [page, setPage] = useState('dashboard');
@@ -184,6 +185,11 @@ export default function App() {
             Settings
           </Button>
 
+          <Button onClick={() => setPage('process')} variant="ghost" className="w-full justify-start">
+            <Settings className="mr-2 h-4 w-4" />
+            Process
+          </Button>
+
         </nav>
       </aside>
 
@@ -196,6 +202,7 @@ export default function App() {
         {page === "settings" && <SettingsPage />}
         {page === "reports" && <Reports />}
         {page === "utilities" && <Utilities />}
+        {page === "process" && <Process />}
 
       </main>
 
