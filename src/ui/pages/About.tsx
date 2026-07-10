@@ -136,7 +136,7 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
 
         <CardContent className="space-y-4 text-sm text-muted-foreground">
           <p>
-            © 2026 Blazed Labs LLC. All Rights Reserved.
+            © 2026 C Berman Associates. All Rights Reserved.
           </p>
 
           <p>

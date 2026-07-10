@@ -12,6 +12,11 @@ app.on('ready', () => {
     },
     // disables default system frame (dont do this if you want a proper working menu bar)
     frame: true,
+    width: 1200,
+    height: 800,
+    minWidth: 1000,
+    minHeight: 600,
+    show: true,
   });
   if (isDev()) {
     mainWindow.loadURL('http://localhost:5123');
