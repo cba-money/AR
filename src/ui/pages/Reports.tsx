@@ -20,7 +20,7 @@ import {
   FolderOpen,
 } from "lucide-react";
 
-export default function ReportsPage() {
+export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
   return (
     <div className="max-w-7xl mx-auto p-8 space-y-6">
 

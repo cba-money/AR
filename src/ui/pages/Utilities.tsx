@@ -20,12 +20,12 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export default function UtilitiesPage() {
+export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
   const utilities = [
     {
       title: "Merge Weekly 7 Files",
       description:
-        "Merge multiple Weekly 7 workbooks into a single consolidated workbook while preserving formatting and formulas.",
+        "Merge multiple Weekly 7 workbooks into a single consolidated workbook while preserving formatting and formulas. Useful for processing IAA and other multi-admin reports.",
       icon: FileStack,
       status: "Available",
       color: "default",
@@ -47,9 +47,9 @@ export default function UtilitiesPage() {
       color: "default",
     },
     {
-      title: "Commission Calculator",
+      title: "Pay Histories Generator",
       description:
-        "Generate commission summaries and payment calculations from imported spreadsheets.",
+        "Generate pay histories from imported spreadsheets.",
       icon: FileSpreadsheet,
       status: "Coming Soon",
       color: "secondary",

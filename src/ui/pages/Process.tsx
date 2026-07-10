@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card.tsx";
 
 import { Button } from "@/components/ui/button.tsx";
 import { Progress } from "@/components/ui/progress.tsx";
@@ -21,7 +21,7 @@ import {
   Terminal,
 } from "lucide-react";
 
-export default function ProcessingPage() {
+export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
   const progress = 62;
 
   const files = [

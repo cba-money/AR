@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select.tsx";
 
-export default function SettingsPage() {
+export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-6">
 

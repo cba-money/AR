@@ -8,7 +8,7 @@ import {
 import { Separator } from "@/components/ui/separator.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 
-export default function About() {
+export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-6">
 

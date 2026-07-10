@@ -13,7 +13,7 @@ import {
   Upload,
   FolderOpen,
 } from "lucide-react";
-export default function Dashboard() {
+export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
 
     return (
         <article>
@@ -68,7 +68,7 @@ export default function Dashboard() {
                 <CardContent className="space-y-3">
 
                 <Button className="w-full">
-                    Process Files
+                    Start Processing
                 </Button>
 
                 <Button
@@ -82,6 +82,7 @@ export default function Dashboard() {
                 <Button
                     variant="outline"
                     className="w-full"
+                    onClick={() => onUpdatePage("settings")}
                 >
                     Settings
                 </Button>
