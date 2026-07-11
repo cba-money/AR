@@ -19,6 +19,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
   getAppVersion: () => ipcInvoke('getAppVersion'),
   getSettings: () => ipcInvoke('getSettings'),
   updateSettings: (payload?: any) => ipcSend('updateSettings', payload),
+  startBatchJob: (config: BatchConfig) => ipcSend('startBatchJob', config),
 } as Window['electron']);
 
 type IpcInvokeKey = keyof EventPayloadMapping;

@@ -51,21 +51,7 @@ export function createMenu(mainWindow: BrowserWindow) {
             label: 'DevTools',
             click: () => mainWindow.webContents.openDevTools(),
             visible: isDev(),
-          },
-          {
-            label: 'RAM',
-            click: () =>
-              ipcWebContentsSend('changeView', mainWindow.webContents, 'RAM'),
-          },
-          {
-            label: 'STORAGE',
-            click: () =>
-              ipcWebContentsSend(
-                'changeView',
-                mainWindow.webContents,
-                'STORAGE'
-              ),
-          },
+          }
         ],
       },
     ])

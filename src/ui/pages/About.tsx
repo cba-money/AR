@@ -32,48 +32,68 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
     <div className="max-w-5xl mx-auto p-8 space-y-6">
 
       <div>
-        <h1 className="text-4xl font-bold">About A/R Desktop Suite</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-4xl font-bold select-none">
+          About A/R Desktop Suite
+        </h1>
+        <p className="text-muted-foreground mt-2 select-none">
           Professional Excel automation tools for Accounts Receivable operations.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Application Information</CardTitle>
-          <CardDescription>
+          <CardTitle className="select-none">
+            Application Information
+          </CardTitle>
+          <CardDescription className="select-none">
             Current installation details
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-2">
           <div className="flex justify-between">
-            <span>Application</span>
-            <Badge>A/R Desktop Suite</Badge>
+            <span className="select-none">
+              Application
+            </span>
+            <Badge className="select-none">
+              A/R Desktop Suite
+            </Badge>
           </div>
 
           <div className="flex justify-between">
-            <span>Version</span>
-            <span>
+            <span className="select-none">
+              Version
+            </span>
+            <span className="select-all">
               {appVersion}
             </span>
           </div>
 
           <div className="flex justify-between">
-            <span>Build</span>
-            <span>Release</span>
+            <span className="select-none">
+              Build
+            </span>
+            <span className="select-all">
+              Release
+            </span>
           </div>
 
           <div className="flex justify-between">
-            <span>Platform</span>
-            <span>Windows</span>
+            <span className="select-none">
+              Platform
+            </span>
+            <span className="select-all">
+              Windows
+            </span>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Getting Started</CardTitle>
+          <CardTitle className="select-none">
+            Getting Started
+          </CardTitle>
         </CardHeader>
 
         <CardContent>
@@ -89,7 +109,9 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
 
       <Card>
         <CardHeader>
-          <CardTitle>Included Modules</CardTitle>
+          <CardTitle className="select-none">
+            Included Modules
+          </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-3">
@@ -139,7 +161,9 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
 
       <Card>
         <CardHeader>
-          <CardTitle>Support</CardTitle>
+          <CardTitle className="select-none">
+            Support
+          </CardTitle>
         </CardHeader>
 
         <CardContent>
@@ -152,7 +176,9 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
 
       <Card>
         <CardHeader>
-          <CardTitle>Copyright & License</CardTitle>
+          <CardTitle className="select-none">
+            Copyright & License
+          </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4 text-sm text-muted-foreground">

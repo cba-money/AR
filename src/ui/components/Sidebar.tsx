@@ -16,7 +16,7 @@ export default function Sidebar({ onUpdatePage }: { onUpdatePage: (page: string)
 
     return (
         <aside className="w-64 border-r bg-background">
-        <div className="p-6">
+        <div className="p-6 select-none">
           <h1 className="text-xl font-bold">
             A/R Desktop Suite
           </h1>

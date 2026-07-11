@@ -2,6 +2,8 @@ import ExcelJS from "exceljs";
 import path from "path";
 import os from "os";
 
+import { settingsManager } from './../../settings.js';
+
 /*
     Deep Clone Helper
     Helps copy style and formatting from source document
@@ -10,6 +12,21 @@ function deepClone<T>(obj: T): T {
     return obj
         ? JSON.parse(JSON.stringify(obj))
         : obj;
+}
+
+/* 
+    Convert mm/dd/yyyy to mm.dd.yy
+*/
+
+function convertDateFormat(dateStr: string): string {
+  // Split the mm/dd/yyyy string into its individual components
+  const [month, day, year] = dateStr.split('/');
+
+  // Extract the last two digits of the year (e.g., "2026" becomes "26")
+  const shortYear = year.slice(-2);
+
+  // Recombine using dots as the separator
+  return `${month}.${day}.${shortYear}`;
 }
 
 /*
@@ -288,10 +305,13 @@ function rowContainsYellow(
 
 export async function formatWorkbook(
     inputFile: string,
-    dateRangeString: string
+    dateRangeString: string,
+    arDate: string
 ): Promise<string> {
 
-    console.log("Starting processing...");
+    const admin = getAdminName(inputFile);
+
+    console.log(`Starting formatting of ${admin}...`);
 
     const allowedMonths =
         parseMonthRanges(dateRangeString);
@@ -405,11 +425,23 @@ export async function formatWorkbook(
 
     });
 
+    const fileFriendlyDate = convertDateFormat(
+        arDate
+    );
+
+    const outputPath = path.join(
+            settingsManager.get('defaultExportPath'),
+            `${admin} AR to ${fileFriendlyDate}.xlsx`
+    );
+
+    console.log(`Generating formatted Excel file: ${outputPath}`);
+    /*
     const outputPath =
         path.join(
             os.tmpdir(),
             `filtered-${Date.now()}.xlsx`
         );
+    */
 
     outputSheet.spliceRows(
         1,

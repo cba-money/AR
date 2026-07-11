@@ -4,35 +4,6 @@ import * as os from 'os';
 import ExcelJS from 'exceljs';
 import puppeteer from 'puppeteer';
 
-// --- Interfaces ---
-export interface ProcessResult {
-    company: string;
-    rows: number;
-    grandTotal: number;
-    monthlyTotals: Record<number, number>;
-    pdfSize: number;
-    fileName: string;
-}
-
-interface CellData {
-    value: any;
-    format: string | null;
-}
-
-interface RowData {
-    rowNum: number;
-    cells: CellData[];
-    dateFormat?: string | null;
-}
-
-interface SortableRow {
-    idx: number;
-    date: Date;
-    dealer: string;
-    contract: string;
-    rowData: RowData;
-}
-
 // --- Helper Functions ---
 
 /**
@@ -139,6 +110,17 @@ export async function generatePdfLocally(html: string, outputPdfPath: string): P
     }
 }
 
+function getAdminName(inputFile: string): string {
+    const fileName = path.basename(inputFile);
+    const parts = fileName.split(" ");
+
+    if (parts.length >= 1) {
+        return parts[0];
+    }
+    return "UNKNOWN";
+}
+
+
 // --- Main Processing Function ---
 
 export async function processARFile(
@@ -150,8 +132,8 @@ export async function processARFile(
     console.log(`\n${'='.repeat(100)}\nPROCESSING: ${filePath}\n${'='.repeat(100)}`);
     
     const fileName = path.basename(filePath);
-    const companyName = fileName.split('_').length > 1 ? fileName.split('_')[1] : fileName;
-    const outputPdfPath = filePath.replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf');
+    const companyName = getAdminName(filePath);
+    const outputPdfPath = filePath.replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
 
     const workbook = new ExcelJS.Workbook();
     try {

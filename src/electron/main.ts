@@ -9,6 +9,7 @@ import { formatWorkbook } from './modules/formatter/formatFiles.js';
 import { processARFile } from './modules/processor/processFiles.js';
 
 import { settingsManager } from './settings.js';
+import { BatchTest } from './modules/batch/batchTest.js';
 
 app.on('ready', () => {
   const mainWindow = new BrowserWindow({
@@ -33,7 +34,7 @@ app.on('ready', () => {
 
   async function testFormatter(){
 
-    let formatted = await formatWorkbook("C:\\Users\\TylerRRuff\\Downloads\\04/HEADSTART - Weekly 7 (1).xlsx", "04/2026,05/2026,06/2026");
+    let formatted = await formatWorkbook("C:\\Users\\TylerRRuff\\Downloads\\04/HEADSTART - Weekly 7 (1).xlsx", "04/2026,05/2026,06/2026", "06/29/2026");
     let formattedFilePath = formatted;
     console.log(`Formatted file: ${formatted}`);
     let processed = await processARFile(
@@ -92,28 +93,6 @@ app.on('ready', () => {
     return await selectLocalFolder();
   });
 
-  /*
-  ipcMainHandle('getStaticData', () => {
-    return getStaticData();
-  });
-  */
-
-  /*
-  ipcMainOn('sendFrameAction', (payload) => {
-    switch (payload) {
-      case 'CLOSE':
-        mainWindow.close();
-        break;
-      case 'MAXIMIZE':
-        mainWindow.maximize();
-        break;
-      case 'MINIMIZE':
-        mainWindow.minimize();
-        break;
-    }
-  });
-  */
-
   createTray(mainWindow);
   handleCloseEvents(mainWindow);
   createMenu(mainWindow);
@@ -135,6 +114,11 @@ ipcMainOn('updateSettings', (payload) => {
   // you can trigger a function call right here.
   // e.g., resourceManager.handleThemeChange(payload.theme);
 });
+
+ipcMainOn('startBatchJob', (config) => {
+  const processor = new BatchTest(config);
+  processor.execute();
+})
 
 function handleCloseEvents(mainWindow: BrowserWindow) {
   let willClose = false;

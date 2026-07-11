@@ -22,19 +22,16 @@ type View = 'CPU' | 'RAM' | 'STORAGE';
 
 */
 
-type FrameWindowAction = 'CLOSE' | 'MAXIMIZE' | 'MINIMIZE';
+//type FrameWindowAction = 'CLOSE' | 'MAXIMIZE' | 'MINIMIZE';
 
 type EventPayloadMapping = {
-  statistics: Statistics;
-  getStaticData: StaticData;
-  changeView: View;
-  sendFrameAction: FrameWindowAction;
   getAppVersion: any;
   getSettings: any;
   updateSettings: any;
   openFolder: any;
   pickFile: any;
   pickFolder: any;
+  startBatchJob: any;
 };
 
 type UnsubscribeFunction = () => void;
@@ -57,5 +54,12 @@ interface Window {
     openFolder: (folderPath: any) => void;
     pickFile: () => any;
     pickFolder: () => any;
+    startBatchJob: (config: BatchConfig) => void;
   };
+}
+
+interface BatchConfig {
+  files: string[];
+  arDate: string; // e.g., '2026-07-11'
+  monthRange: number[];
 }

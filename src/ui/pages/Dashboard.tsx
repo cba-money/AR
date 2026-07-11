@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { DatePicker } from "@/components/DatePicker.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import {
   Home,
@@ -68,9 +69,17 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
         return ellipsis + str.slice(-keepLength);
     }
 
+    async function startProcess(){
+        window.electron.startBatchJob({
+            files: files,
+            arDate: "06/29/2026"
+        } as BatchConfig);
+        onUpdatePage('process');
+    }
+
     return (
         <article>
-            <div className="mb-8">
+            <div className="mb-8 select-none">
                 <h2 className="text-3xl font-bold">
                     Dashboard
                 </h2>
@@ -85,7 +94,7 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
                 <Card className="col-span-2">
 
                     <CardHeader>
-                        <CardTitle>
+                        <CardTitle className="select-none">
                             Upload Excel Files
                         </CardTitle>
                     </CardHeader>
@@ -148,14 +157,14 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
                 <Card>
 
                     <CardHeader>
-                        <CardTitle>
+                        <CardTitle className="select-none">
                             Quick Actions
                         </CardTitle>
                     </CardHeader>
 
                     <CardContent className="space-y-3">
 
-                    <Button className="w-full" disabled={files.length > 0 ? false : true}>
+                    <Button className="w-full" disabled={files.length > 0 ? false : true} onClick={() => startProcess()}>
                         Start Processing
                     </Button>
 
@@ -175,6 +184,8 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
                     >
                         Settings
                     </Button>
+
+                    <DatePicker />
 
                     </CardContent>
 
