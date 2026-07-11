@@ -1,4 +1,4 @@
-import { ipcMain, WebContents, WebFrameMain } from 'electron';
+import { ipcMain, WebContents, WebFrameMain, BrowserWindow, dialog} from 'electron';
 import { getUIPath } from './pathResolver.js';
 import { pathToFileURL } from 'url';
 
@@ -44,4 +44,32 @@ export function validateEventFrame(frame: WebFrameMain | null) {
   if (frame.url !== pathToFileURL(getUIPath()).toString()) {
     throw new Error('Malicious event');
   }
+}
+
+export async function selectLocalFile(mainWindow: BrowserWindow){
+    // BrowserWindow.getFocusedWindow() can return null; pass mainWindow instead
+    const focusedWindow = BrowserWindow.getFocusedWindow() || mainWindow;
+
+    const result = await dialog.showOpenDialog(focusedWindow, {
+      properties: ['openFile'],
+      filters: [{ name: 'Excel Spreadsheets', extensions: ['xlsx', 'csv', 'xlsm', 'xml'] }]
+    });
+
+    if (!result.canceled) {
+      const filePath = result.filePaths[0]; // Contains the full absolute path string
+      console.log('Selected file:', filePath);
+      return filePath;
+    }
+}
+
+export async function selectLocalFolder(mainWindow: BrowserWindow){
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory'] // Enables folder selection instead of files
+    });
+    
+    if (canceled) {
+      return null;
+    } else {
+      return filePaths[0]; // Returns the full absolute path of the chosen folder
+    }
 }

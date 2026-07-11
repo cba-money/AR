@@ -1,14 +1,17 @@
-import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron';
-import { ipcMainHandle, ipcMainOn, isDev } from './util.js';
-//import { getStaticData, pollResources } from './resourceManager.js';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { ipcMainHandle, 
+  ipcMainOn, 
+  isDev,
+  selectLocalFile,
+  selectLocalFolder
+} from './util.js';
+
 import { getPreloadPath, getUIPath } from './pathResolver.js';
 import { createTray } from './tray.js';
 import { createMenu } from './menu.js';
 
-import { formatWorkbook } from './modules/formatter/formatFiles.js';
-import { processARFile } from './modules/processor/processFiles.js';
-
 import { settingsManager } from './settings.js';
+
 import { BatchTest } from './modules/batch/batchTest.js';
 
 app.on('ready', () => {
@@ -30,51 +33,7 @@ app.on('ready', () => {
     mainWindow.loadFile(getUIPath());
   }
 
-  //pollResources(mainWindow);
-
-  async function testFormatter(){
-
-    let formatted = await formatWorkbook("C:\\Users\\TylerRRuff\\Downloads\\04/HEADSTART - Weekly 7 (1).xlsx", "04/2026,05/2026,06/2026", "06/29/2026");
-    let formattedFilePath = formatted;
-    console.log(`Formatted file: ${formatted}`);
-    let processed = await processARFile(
-      formattedFilePath,
-      new Date("06/29/2026"),
-      [4, 5, 6]
-    );
-    console.log(processed);
-  
-  }
-
-  //testFormatter();
-
-  async function selectLocalFile(){
-    // BrowserWindow.getFocusedWindow() can return null; pass mainWindow instead
-    const focusedWindow = BrowserWindow.getFocusedWindow() || mainWindow;
-
-    const result = await dialog.showOpenDialog(focusedWindow, {
-      properties: ['openFile'],
-      filters: [{ name: 'Excel Spreadsheets', extensions: ['xlsx', 'csv', 'xlsm', 'xml'] }]
-    });
-
-    if (!result.canceled) {
-      const filePath = result.filePaths[0]; // Contains the full absolute path string
-      console.log('Selected file:', filePath);
-      return filePath;
-    }
-  }
-
-  async function selectLocalFolder(){
-    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
-      properties: ['openDirectory'] // Enables folder selection instead of files
-    });
-    
-    if (canceled) {
-      return null;
-    } else {
-      return filePaths[0]; // Returns the full absolute path of the chosen folder
-    }
-  }
+  /* IPC Handlers */
 
   ipcMainOn('openFolder', (folderPath) => {
     if(folderPath === "output"){
@@ -86,11 +45,11 @@ app.on('ready', () => {
   })
 
   ipcMainHandle('pickFile', async() => {
-    return await selectLocalFile();
+    return await selectLocalFile(mainWindow);
   });
 
   ipcMainHandle('pickFolder', async() => {
-    return await selectLocalFolder();
+    return await selectLocalFolder(mainWindow);
   });
 
   createTray(mainWindow);
