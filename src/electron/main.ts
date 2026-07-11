@@ -31,7 +31,7 @@ app.on('ready', () => {
 
   async function testFormatter(){
 
-    let formatted = await formatWorkbook("C:\\Users\\TylerRRuff\\Downloads\\HEADSTART - Weekly 7.xlsx", "04/2026,05/2026,06/2026");
+    let formatted = await formatWorkbook("C:\\Users\\TylerRRuff\\Downloads\\04/HEADSTART - Weekly 7 (1).xlsx", "04/2026,05/2026,06/2026");
     let formattedFilePath = formatted;
     console.log(`Formatted file: ${formatted}`);
     let processed = await processARFile(

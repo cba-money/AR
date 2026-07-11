@@ -36,6 +36,21 @@ interface SortableRow {
 // --- Helper Functions ---
 
 /**
+ * Parses a date string formatted as MM/DD/YY or MM/DD/YYYY
+ */
+/*
+function parseDateString(dateStr: string): Date | null {
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return null;
+    let year = parseInt(parts[2], 10);
+    if (year < 100) year += 2000;
+    const month = parseInt(parts[0], 10) - 1;
+    const day = parseInt(parts[1], 10);
+    const d = new Date(year, month, day);
+    return isNaN(d.getTime()) ? null : d;
+}
+*/
+/**
  * Parses a date string formatted as MM/DD/YY or MM/DD/YYYY in UTC
  */
 function parseDateString(dateStr: string): Date | null {
@@ -48,19 +63,34 @@ function parseDateString(dateStr: string): Date | null {
     const month = parseInt(parts[0], 10) - 1;
     const day = parseInt(parts[1], 10);
     
+    // Use Date.UTC to prevent local time zone shifts
     const utcTime = Date.UTC(year, month, day);
     
     return isNaN(utcTime) ? null : new Date(utcTime);
 }
 
 /**
+ * Extracts numeric value from currency strings
+ */
+/*
+function parseCurrency(val: any): number {
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    const cleanStr = String(val).replace(/[$,]/g, '').trim();
+    const parsed = parseFloat(cleanStr);
+    return isNaN(parsed) ? 0 : parsed;
+}
+*/
+/**
  * Extracts numeric value from currency strings or ExcelJS formula objects
  */
 function parseCurrency(val: any): number {
+    // 1. Handle ExcelJS formula objects ({ formula: '...', result: 123 })
     if (val && typeof val === 'object' && 'result' in val) {
         val = val.result;
     }
 
+    // 2. Existing parsing logic
     if (typeof val === 'number') return val;
     if (!val) return 0;
     
@@ -69,9 +99,22 @@ function parseCurrency(val: any): number {
     return isNaN(parsed) ? 0 : parsed;
 }
 
+
 /**
  * Finds the commission column by searching row 2
  */
+/*
+function findCommissionColumn(worksheet: ExcelJS.Worksheet): number | null {
+    const row = worksheet.getRow(2);
+    let targetCol: number | null = null;
+    row.eachCell((cell, colNumber) => {
+        if (cell.value && String(cell.value).toLowerCase().includes('commission')) {
+            targetCol = colNumber;
+        }
+    });
+    return targetCol;
+}
+*/
 function findCommissionColumn(ws: ExcelJS.Worksheet): number | null {
     const row = ws.getRow(2);
     for (let col = 1; col <= row.cellCount; col++) {
@@ -117,6 +160,8 @@ function getYellowColorCode(worksheet: ExcelJS.Worksheet): string {
 export async function generatePdfLocally(html: string, outputPdfPath: string): Promise<void> {
     const browser = await puppeteer.launch({
         headless: true,
+        // Optional: in an Electron environment, you might need to point this to the system Chrome
+        // executablePath: '/path/to/chrome',
     });
 
     try {
@@ -141,6 +186,12 @@ export async function generatePdfLocally(html: string, outputPdfPath: string): P
 
 // --- Main Processing Function ---
 
+/**
+ * Processes the AR Excel file and generates a PDF report.
+ * * @param filePath Full absolute path to the Excel file
+ * @param givenDate The cutoff Date object
+ * @param monthsToProcess Array of integers representing months (e.g., [1, 2, 3])
+ */
 export async function processARFile(
     filePath: string, 
     givenDate: Date, 
@@ -165,6 +216,21 @@ export async function processARFile(
     if (!ws) return null;
 
     const commissionCol = findCommissionColumn(ws);
+    const headerRow = ws.getRow(2);
+
+    /*
+    for (let i = 1; i <= headerRow.cellCount; i++) {
+        console.log(i, headerRow.getCell(i).value);
+    }
+    for (let i = commissionCol ?? 0 - 2; i <= (commissionCol ?? 0) + 2; i++) {
+            console.log(
+                "Row 3 Col", i,
+                ws.getRow(3).getCell(i).value
+            );
+        }
+    */
+    //REMOVE
+    //console.log(ws.getRow(3).getCell(commissionCol ?? "").value);
     if (!commissionCol) {
         console.log("✗ No Commission column found");
         return null;
@@ -179,6 +245,7 @@ export async function processARFile(
 
     const dataRows: RowData[] = [];
 
+    // Iterate rows starting from 3
     for (let rowNum = 3; rowNum <= ws.rowCount; rowNum++) {
         const row = ws.getRow(rowNum);
         
@@ -201,6 +268,7 @@ export async function processARFile(
         const colIValue = cellI.value ? String(cellI.value) : '';
         const colFValue = cellF.value;
 
+        // DEDUCTED check
         if (colIValue.includes('DEDUCTED')) {
             const datePart = colIValue.split('DEDUCTED').pop()?.split('-')[0]?.trim();
             if (datePart) {
@@ -221,6 +289,7 @@ export async function processARFile(
             if (colIValue && colFValue instanceof Date && colFValue <= givenDate) continue;
         }
 
+        // Collect row data
         const cellsData: CellData[] = [];
         for (let colNum = 1; colNum <= commissionCol; colNum++) {
             const cell = row.getCell(colNum);
@@ -238,11 +307,14 @@ export async function processARFile(
     }
 
     console.log(`✓ Rows kept after filtering: ${dataRows.length}`);
+    if (dataRows.length === 0) {
+        console.log("⚠ No rows to display after filtering");
+    }
 
     // Sort Data
     const dataForSort: SortableRow[] = dataRows.map((rowData, idx) => {
         const dateVal = rowData.cells[0]?.value;
-        const parsedDate = dateVal instanceof Date ? dateVal : new Date(Date.UTC(2099, 0, 1));
+        const parsedDate = dateVal instanceof Date ? dateVal : new Date(2099, 0, 1);
         const dealerVal = rowData.cells[2]?.value ? String(rowData.cells[2].value) : '';
         const contractVal = rowData.cells[3]?.value ? String(rowData.cells[3].value) : '';
 
@@ -268,7 +340,7 @@ export async function processARFile(
         const commVal = row.cells[commissionCol - 1]?.value;
         
         if (dateVal instanceof Date && commVal !== undefined && commVal !== null) {
-            const month = dateVal.getUTCMonth() + 1; // ✨ FIXED: Use getUTCMonth() to stop local shifts
+            const month = dateVal.getMonth() + 1; // JS months are 0-11, map to 1-12
             const commNum = parseCurrency(commVal);
 
             if (monthlyTotals.hasOwnProperty(month)) {
@@ -276,24 +348,39 @@ export async function processARFile(
             }
         }
         
-        if (commVal !== undefined && commVal !== null) {
+        /*
+        if (commVal) {
             directSum += parseCurrency(commVal);
         }
+        */
+       if (commVal !== undefined && commVal !== null) {
+            directSum += parseCurrency(commVal);
+       }
+
+       //REMOVE
+       /*
+        console.log(
+            "Commission raw:",
+            typeof commVal,
+            JSON.stringify(commVal)
+        );
+        */
     });
 
     const monthlySum = Object.values(monthlyTotals).reduce((sum, val) => sum + val, 0);
-    const grandTotal = monthlySum; 
+    const grandTotal = monthlySum; // According to python logic, grandTotal = sum of monthly_totals
 
     console.log(`✓ Verification:`);
     console.log(`  - Direct sum of commissions:  $${directSum.toFixed(2)}`);
-    console.log(`  - Sum of monthly totals:      $${monthlySum.toFixed(2)}`);
-    console.log(`  - Grand total:                $${grandTotal.toFixed(2)}`);
+    console.log(`  - Sum of monthly totals:     $${monthlySum.toFixed(2)}`);
+    console.log(`  - Grand total:               $${grandTotal.toFixed(2)}`);
 
     if (Math.abs(directSum - monthlySum) > 0.01 || Math.abs(directSum - grandTotal) > 0.01) {
         console.log(`✗ VERIFICATION FAILED - Totals don't match!`);
         return null;
     }
 
+    // HTML Generation
     const monthNames: Record<number, string> = {
         1: 'JANUARY', 2: 'FEBRUARY', 3: 'MARCH', 4: 'APRIL',
         5: 'MAY', 6: 'JUNE', 7: 'JULY', 8: 'AUGUST',
@@ -317,7 +404,7 @@ tr:nth-child(even) { background-color: #f9f9f9; }
 </style>
 </head>
 <body>
-<h2>${companyName} A/R to ${givenDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', timeZone: 'UTC' })}</h2>
+<h2>${companyName} A/R to ${givenDate.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</h2>
 <table>
 <tr><th>Date</th><th>Agent</th><th>Dealer</th><th>Contract</th><th>Commission</th></tr>
 `;
@@ -327,12 +414,7 @@ tr:nth-child(even) { background-color: #f9f9f9; }
     rowsSorted.forEach((rowData, idx) => {
         const cells = rowData.cells;
         const dateVal = cells[0]?.value;
-        
-        // ✨ FIXED: Force toLocaleDateString to output the date in UTC format
-        const dateStr = dateVal instanceof Date 
-            ? dateVal.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', timeZone: 'UTC' }) 
-            : String(dateVal || '');
-            
+        const dateStr = dateVal instanceof Date ? dateVal.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : String(dateVal || '');
         const agentStr = cells[1]?.value ? String(cells[1].value) : '';
         const dealerStr = cells[2]?.value ? String(cells[2].value) : '';
         const contractStr = cells[3]?.value ? String(cells[3].value) : '';
@@ -344,12 +426,12 @@ tr:nth-child(even) { background-color: #f9f9f9; }
 
         htmlContent += `<tr><td>${dateStr}</td><td>${agentStr}</td><td>${dealerStr}</td><td>${contractStr}</td><td class="number">${commStr}</td></tr>\n`;
 
-        const currentMonth = dateVal instanceof Date ? dateVal.getUTCMonth() + 1 : null; // ✨ FIXED: getUTCMonth()
+        const currentMonth = dateVal instanceof Date ? dateVal.getMonth() + 1 : null;
         let nextMonth: number | null = null;
         
         if (idx + 1 < rowsSorted.length) {
             const nextDate = rowsSorted[idx + 1].cells[0]?.value;
-            nextMonth = nextDate instanceof Date ? nextDate.getUTCMonth() + 1 : null; // ✨ FIXED: getUTCMonth()
+            nextMonth = nextDate instanceof Date ? nextDate.getMonth() + 1 : null;
         }
 
         if (currentMonth && (nextMonth === null || nextMonth !== currentMonth)) {
@@ -366,6 +448,7 @@ tr:nth-child(even) { background-color: #f9f9f9; }
     htmlContent += `<tr class="grand-total"><td>GRAND TOTAL</td><td></td><td></td><td></td><td class="number">${formattedGrandTotal}</td></tr>\n`;
     htmlContent += '</table></body></html>';
 
+    // Generate the PDF Locally
     try {
         await generatePdfLocally(htmlContent, outputPdfPath);
         
