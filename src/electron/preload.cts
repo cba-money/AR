@@ -13,7 +13,9 @@ electron.contextBridge.exposeInMainWorld('electron', {
   getStaticData: () => ipcInvoke('getStaticData'),
   sendFrameAction: (payload) => ipcSend('sendFrameAction', payload),
   */
+  openFolder: (folderPath?: any) => ipcSend('openFolder', folderPath),
   pickFile: () => ipcInvoke('pickFile'),
+  pickFolder: () => ipcInvoke('pickFolder'),
   getAppVersion: () => ipcInvoke('getAppVersion'),
   getSettings: () => ipcInvoke('getSettings'),
   updateSettings: (payload?: any) => ipcSend('updateSettings', payload),

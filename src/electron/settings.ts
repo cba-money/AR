@@ -3,12 +3,15 @@ import Store from 'electron-store';
 // 2. Define default values
 const defaults: AppSettings = {
   theme: 'dark',
-  defaultExportPath: '/var/www/html',
+  defaultExportPath: process.cwd(),
+  tmpFolder: process.cwd(),
   autoProcessingEnabled: false,
 };
 
 // 3. Initialize the store (electron-store safely handles production paths automatically)
 const store = new Store<AppSettings>({ defaults });
+
+//store.reset();
 
 export const settingsManager = {
   getStore: () => store.store, // Returns the whole settings object
@@ -17,4 +20,5 @@ export const settingsManager = {
   // Merge partial updates with the existing settings to ensure all required fields are present
   updateAll: (newSettings: Partial<AppSettings>) =>
     store.set({ ...store.store, ...newSettings } as AppSettings),
+  reset: () => store.reset(),
 };

@@ -22,12 +22,47 @@ import {
 } from "@/components/ui/select.tsx";
 
 export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
-  const [settings, setSettings] = useState<boolean | AppSettings>(false);
+
+  const [theme, setTheme] = useState<string>("");
+  const [defaultExportPath, setDefaultExportPath] = useState<string>("");
   useEffect(() => {
     window.electron.getSettings().then((currentSettings: AppSettings) => {
-      setSettings(currentSettings)
+      setTheme(currentSettings.theme);
+      setDefaultExportPath(currentSettings.defaultExportPath);
     });
   }, []);
+
+  async function folderPickerDialog(){
+      let path = await window.electron.pickFolder();
+      console.log(path);
+      return path;
+  }
+
+  function ControlledSelect(apiData: any) {
+    // Always provide a fallback ("") to prevent an initial 'undefined' state
+    const [selectedValue, setSelectedValue] = useState(apiData ?? "system");
+
+    // Sync state if apiData loads late
+    useEffect(() => {
+      if (apiData?.status) {
+        setSelectedValue(apiData);
+      }
+    }, [apiData]);
+
+    return (
+      <Select defaultValue={theme.toString()}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="light">Light</SelectItem>
+            <SelectItem value="dark">Dark</SelectItem>
+            <SelectItem value="system">System Default</SelectItem>
+          </SelectContent>
+      </Select>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-6">
@@ -54,17 +89,8 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
           <div className="space-y-2">
             <Label>Theme</Label>
 
-            <Select defaultValue={settings && typeof settings !== "boolean" ? settings.theme ?? "" : "system"}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="system">System Default</SelectItem>
-              </SelectContent>
-            </Select>
+            <ControlledSelect apiData={theme} />
+            
           </div>
 
         </CardContent>
@@ -83,8 +109,8 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
             <Label>Default Output Folder</Label>
 
             <div className="flex gap-2">
-              <Input value={settings && typeof settings !== "boolean" ? settings.defaultExportPath ?? "" : ""} readOnly />
-              <Button variant="outline">
+              <Input value={defaultExportPath} readOnly onClick={folderPickerDialog} />
+              <Button variant="outline" onClick={folderPickerDialog}>
                 Browse
               </Button>
             </div>
@@ -209,7 +235,7 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
 
       <div className="flex justify-end gap-3">
 
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => onUpdatePage('dashboard')}>
           Cancel
         </Button>
 

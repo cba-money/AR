@@ -1,6 +1,7 @@
 interface AppSettings {
   theme: 'system' | 'light' | 'dark';
   defaultExportPath: string;
+  tmpFolder: string;
   autoProcessingEnabled: boolean;
 }
 
@@ -31,7 +32,9 @@ type EventPayloadMapping = {
   getAppVersion: any;
   getSettings: any;
   updateSettings: any;
+  openFolder: any;
   pickFile: any;
+  pickFolder: any;
 };
 
 type UnsubscribeFunction = () => void;
@@ -51,6 +54,8 @@ interface Window {
     getAppVersion: () => any;
     updateSettings: (payload: any) => void;
     getSettings: () => any;
+    openFolder: (folderPath: any) => void;
     pickFile: () => any;
+    pickFolder: () => any;
   };
 }

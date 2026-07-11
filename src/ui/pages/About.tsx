@@ -20,7 +20,7 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
       setAppVersion(version);
     } catch (error) {
       //console.error("Failed to get version:", error);
-      setAppVersion("0.0.0")
+      setAppVersion("0.0.0");
     }
   }
 

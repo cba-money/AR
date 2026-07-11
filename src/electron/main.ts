@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron';
 import { ipcMainHandle, ipcMainOn, isDev } from './util.js';
 //import { getStaticData, pollResources } from './resourceManager.js';
 import { getPreloadPath, getUIPath } from './pathResolver.js';
@@ -63,8 +63,33 @@ app.on('ready', () => {
     }
   }
 
+  async function selectLocalFolder(){
+    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory'] // Enables folder selection instead of files
+    });
+    
+    if (canceled) {
+      return null;
+    } else {
+      return filePaths[0]; // Returns the full absolute path of the chosen folder
+    }
+  }
+
+  ipcMainOn('openFolder', (folderPath) => {
+    if(folderPath === "output"){
+      const exportPath = settingsManager.getStore().defaultExportPath;
+      shell.openPath(exportPath);
+      return;
+    }
+    shell.openPath(folderPath);
+  })
+
   ipcMainHandle('pickFile', async() => {
     return await selectLocalFile();
+  });
+
+  ipcMainHandle('pickFolder', async() => {
+    return await selectLocalFolder();
   });
 
   /*

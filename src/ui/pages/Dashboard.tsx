@@ -1,5 +1,7 @@
 "use client"
 
+import { useState, useEffect } from "react";
+
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
@@ -12,12 +14,58 @@ import {
   Settings,
   Upload,
   FolderOpen,
+  X
 } from "lucide-react";
 export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+
+    const [files, setFiles] = useState<string[]>([]);
+
+    /*
+    function addFile(filePath: string){
+        setFiles((prevFiles) => [filePath, ...prevFiles]);
+    }
+    */
+    function addFile(filePath: string) {
+        setFiles((prevFiles) => {
+            const isDuplicate = prevFiles.some(
+            (file) => file.toLowerCase() === filePath.toLowerCase()
+            );
+
+            if (isDuplicate) return prevFiles;
+            
+            return [filePath, ...prevFiles];
+        });
+    }
+
+    function deleteFile(indexDelete: number){
+        let filesMutated = files.filter((_, index) => index !== indexDelete);
+        setFiles(filesMutated);
+    }
 
     async function filePickerDialog(){
         let path = await window.electron.pickFile();
         return path;
+    }
+
+    function openOutputFolder(){
+        return window.electron.openFolder("output");
+    }
+
+    function addLeftEllipsis(str: string, maxLength: number): string {
+        if (str.length <= maxLength) {
+            return str;
+        }
+        
+        // Calculate how many characters of the original string we need to keep
+        const ellipsis = '...';
+        const keepLength = maxLength - ellipsis.length;
+        
+        // Prevent negative substring lengths if maxLength is exceptionally small
+        if (keepLength <= 0) {
+            return ellipsis;
+        }
+
+        return ellipsis + str.slice(-keepLength);
     }
 
     return (
@@ -44,22 +92,53 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
 
                     <CardContent>
 
-                    <div className="border-2 border-dashed rounded-xl h-48 flex flex-col justify-center items-center">
+                    <div className="border-2 border-dashed rounded-xl h-48 flex flex-col justify-center items-center overflow-y-auto">
 
                         <Upload className="h-10 w-10 text-muted-foreground mb-4" />
 
-                        <p className="font-medium">
-                            Drag & Drop Excel Files
-                        </p>
+                        {
+                            files.length === 0 ?
+                        (
+                        <div className="select-none" onClick={async() => {
+                                let newFile = await filePickerDialog();
+                                if(!newFile) return;
+                                addFile(newFile);
+                            }}>
+                            <p className="font-medium">
+                                Drag & Drop Excel Files
+                            </p>
 
-                        <p className="text-sm text-muted-foreground">
-                            or click Browse
-                        </p>
+                            <p className="text-sm text-muted-foreground">
+                                or click Browse
+                            </p>
+                        </div>
+                        ) : (
+                            <ul>
+                                {
+                                    files.map((file, i) => (
+                                        <li key={i} className="flex space-y-2">
+                                            <span className="select-all">
+                                                {addLeftEllipsis(file, 60)}
+                                            </span>
+                                            <i className="select-none inline-flex hover:text-gray-500 pl-2" onClick={() => deleteFile(i)}>
+                                                <X className="w-5 h-5" />
+                                            </i>
+                                        </li>
+                                    ))
+                                }
+                            </ul>
+                        )
+                        }
 
-                        <Button className="mt-5" onClick={filePickerDialog}>
-                            Browse Files
+                    </div>
+                    <div>
+                        <Button className="mt-5" onClick={async() => {
+                                let newFile = await filePickerDialog();
+                                if(!newFile) return;
+                                addFile(newFile);
+                            }}>
+                                Browse Files
                         </Button>
-
                     </div>
 
                     </CardContent>
@@ -76,13 +155,14 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
 
                     <CardContent className="space-y-3">
 
-                    <Button className="w-full">
+                    <Button className="w-full" disabled={files.length > 0 ? false : true}>
                         Start Processing
                     </Button>
 
                     <Button
                         variant="secondary"
                         className="w-full"
+                        onClick={() => openOutputFolder()}
                     >
                         <FolderOpen className="mr-2 h-4 w-4" />
                         Open Output Folder
