@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   Card,
   CardContent,
@@ -20,6 +22,13 @@ import {
 } from "@/components/ui/select.tsx";
 
 export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+  const [settings, setSettings] = useState<boolean | AppSettings>(false);
+  useEffect(() => {
+    window.electron.getSettings().then((currentSettings: AppSettings) => {
+      setSettings(currentSettings)
+    });
+  }, []);
+
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-6">
 
@@ -45,7 +54,7 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
           <div className="space-y-2">
             <Label>Theme</Label>
 
-            <Select defaultValue="system">
+            <Select defaultValue={settings && typeof settings !== "boolean" ? settings.theme ?? "" : "system"}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -74,7 +83,7 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
             <Label>Default Output Folder</Label>
 
             <div className="flex gap-2">
-              <Input value="C:\\Users\\Tyler\\Documents\\AR Output" readOnly />
+              <Input value={settings && typeof settings !== "boolean" ? settings.defaultExportPath ?? "" : ""} readOnly />
               <Button variant="outline">
                 Browse
               </Button>

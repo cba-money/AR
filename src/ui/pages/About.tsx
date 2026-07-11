@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 import {
   Card,
   CardContent,
@@ -9,6 +11,23 @@ import { Separator } from "@/components/ui/separator.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 
 export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+  const [appVersion, setAppVersion] = useState("0.0.0");
+
+  async function displayAppVersion() {
+    try {
+      const version = await window.electron.getAppVersion();
+      //console.log(`Current App Version: v${version}`); // Output: "Current App Version: v1.0.0"
+      setAppVersion(version);
+    } catch (error) {
+      //console.error("Failed to get version:", error);
+      setAppVersion("0.0.0")
+    }
+  }
+
+  useEffect(() => {
+    displayAppVersion();
+  }, [])
+
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-6">
 
@@ -35,7 +54,9 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
 
           <div className="flex justify-between">
             <span>Version</span>
-            <span>1.0.0</span>
+            <span>
+              {appVersion}
+            </span>
           </div>
 
           <div className="flex justify-between">

@@ -1,6 +1,7 @@
 const electron = require('electron');
 
 electron.contextBridge.exposeInMainWorld('electron', {
+  /*
   subscribeStatistics: (callback) =>
     ipcOn('statistics', (stats) => {
       callback(stats);
@@ -11,11 +12,19 @@ electron.contextBridge.exposeInMainWorld('electron', {
     }),
   getStaticData: () => ipcInvoke('getStaticData'),
   sendFrameAction: (payload) => ipcSend('sendFrameAction', payload),
-} satisfies Window['electron']);
+  */
+  pickFile: () => ipcInvoke('pickFile'),
+  getAppVersion: () => ipcInvoke('getAppVersion'),
+  getSettings: () => ipcInvoke('getSettings'),
+  updateSettings: (payload?: any) => ipcSend('updateSettings', payload),
+} as Window['electron']);
 
-function ipcInvoke<Key extends keyof EventPayloadMapping>(
+type IpcInvokeKey = keyof EventPayloadMapping;
+
+
+function ipcInvoke<Key extends IpcInvokeKey>(
   key: Key
-): Promise<EventPayloadMapping[Key]> {
+): Promise<Key extends keyof EventPayloadMapping ? EventPayloadMapping[Key] : unknown> {
   return electron.ipcRenderer.invoke(key);
 }
 

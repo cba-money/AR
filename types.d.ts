@@ -1,3 +1,10 @@
+interface AppSettings {
+  theme: 'system' | 'light' | 'dark';
+  defaultExportPath: string;
+  autoProcessingEnabled: boolean;
+}
+
+/*
 type Statistics = {
   cpuUsage: number;
   ramUsage: number;
@@ -12,6 +19,8 @@ type StaticData = {
 
 type View = 'CPU' | 'RAM' | 'STORAGE';
 
+*/
+
 type FrameWindowAction = 'CLOSE' | 'MAXIMIZE' | 'MINIMIZE';
 
 type EventPayloadMapping = {
@@ -19,12 +28,17 @@ type EventPayloadMapping = {
   getStaticData: StaticData;
   changeView: View;
   sendFrameAction: FrameWindowAction;
+  getAppVersion: any;
+  getSettings: any;
+  updateSettings: any;
+  pickFile: any;
 };
 
 type UnsubscribeFunction = () => void;
 
 interface Window {
   electron: {
+    /*
     subscribeStatistics: (
       callback: (statistics: Statistics) => void
     ) => UnsubscribeFunction;
@@ -33,5 +47,10 @@ interface Window {
       callback: (view: View) => void
     ) => UnsubscribeFunction;
     sendFrameAction: (payload: FrameWindowAction) => void;
+    */
+    getAppVersion: () => any;
+    updateSettings: (payload: any) => void;
+    getSettings: () => any;
+    pickFile: () => any;
   };
 }

@@ -1,12 +1,14 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron';
 import { ipcMainHandle, ipcMainOn, isDev } from './util.js';
-import { getStaticData, pollResources } from './resourceManager.js';
+//import { getStaticData, pollResources } from './resourceManager.js';
 import { getPreloadPath, getUIPath } from './pathResolver.js';
 import { createTray } from './tray.js';
 import { createMenu } from './menu.js';
 
 import { formatWorkbook } from './modules/formatter/formatFiles.js';
 import { processARFile } from './modules/processor/processFiles.js';
+
+import { settingsManager } from './settings.js';
 
 app.on('ready', () => {
   const mainWindow = new BrowserWindow({
@@ -27,7 +29,7 @@ app.on('ready', () => {
     mainWindow.loadFile(getUIPath());
   }
 
-  pollResources(mainWindow);
+  //pollResources(mainWindow);
 
   async function testFormatter(){
 
@@ -43,12 +45,35 @@ app.on('ready', () => {
   
   }
 
-  testFormatter();
+  //testFormatter();
 
+  async function selectLocalFile(){
+    // BrowserWindow.getFocusedWindow() can return null; pass mainWindow instead
+    const focusedWindow = BrowserWindow.getFocusedWindow() || mainWindow;
+
+    const result = await dialog.showOpenDialog(focusedWindow, {
+      properties: ['openFile'],
+      filters: [{ name: 'Excel Spreadsheets', extensions: ['xlsx', 'csv', 'xlsm', 'xml'] }]
+    });
+
+    if (!result.canceled) {
+      const filePath = result.filePaths[0]; // Contains the full absolute path string
+      console.log('Selected file:', filePath);
+      return filePath;
+    }
+  }
+
+  ipcMainHandle('pickFile', async() => {
+    return await selectLocalFile();
+  });
+
+  /*
   ipcMainHandle('getStaticData', () => {
     return getStaticData();
   });
+  */
 
+  /*
   ipcMainOn('sendFrameAction', (payload) => {
     switch (payload) {
       case 'CLOSE':
@@ -62,10 +87,28 @@ app.on('ready', () => {
         break;
     }
   });
+  */
 
   createTray(mainWindow);
   handleCloseEvents(mainWindow);
   createMenu(mainWindow);
+});
+
+ipcMainHandle('getAppVersion', () => {
+  return app.getVersion(); // Returns a string, matching our Mapping type
+});
+
+ipcMainHandle('getSettings', () => {
+    return settingsManager.getStore();
+});
+
+// React sends this to update settings
+ipcMainOn('updateSettings', (payload) => {
+  settingsManager.updateAll(payload);
+  
+  // Optional: If your backend modules need to react immediately to a settings change, 
+  // you can trigger a function call right here.
+  // e.g., resourceManager.handleThemeChange(payload.theme);
 });
 
 function handleCloseEvents(mainWindow: BrowserWindow) {
