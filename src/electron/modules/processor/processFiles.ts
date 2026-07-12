@@ -250,6 +250,7 @@ tr:nth-child(even) { background-color: #f9f9f9; }
                 company: companyName,
                 rows: rowsSorted.length,
                 grandTotal: grandTotal,
+                totalCommission: directSum,
                 monthlyTotals: monthlyTotals,
                 pdfSize: pdfSize,
                 fileName: outputPdfPath

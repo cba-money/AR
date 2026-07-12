@@ -1,9 +1,10 @@
 // Inputs from the UI
 
 // Aggregation State
-interface Totals {
-  admins: Record<string, number>;
-  arPerMonth: Record<string, number>;
+interface Total {
+  adminName: string;
+  grandTotal: number;
+  arPerMonth: Record<number, number>;
 }
 
 // Progress Event payload

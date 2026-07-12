@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -22,7 +23,57 @@ import {
 } from "lucide-react";
 
 export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
-  const progress = 62;
+  const [logs, setLogs] = useState<BatchLog[]>([]);
+  const [progress, setProgress] = useState<number>(0);
+
+  const consoleLogOutputRef = useRef<HTMLDivElement | null>(null);
+
+  /*
+  useEffect(() => {
+    const handleIncomingLogs = (data: string) => {
+      setLogs([...logs, data]);
+    }
+    const unsubscribe = window.electron.processLog(handleIncomingLogs);
+    return () => {
+      unsubscribe();
+    }
+  })
+  */
+ useEffect(() => {
+    const unsubscribe =
+        window.electron.subscribeBatchLog(log => {
+            setLogs(prev => [...prev, log]);
+        });
+
+    return unsubscribe;
+ }, []);
+
+ useEffect(() => {
+    const unsubscribe =
+        window.electron.subscribeBatchProgress(progress => {
+            setProgress(progress.percent);
+        });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if(progress >= 100){
+      onUpdatePage('complete');
+    }
+  }, [progress]);
+
+  useEffect(() => {
+    if(consoleLogOutputRef.current){
+      //consoleLogOutputRef.current?.lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+      consoleLogOutputRef.current.scrollTo({
+        top: consoleLogOutputRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [logs]);
+
+  //const progress = 62;
 
   const files = [
     {
@@ -47,6 +98,7 @@ export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: 
     },
   ];
 
+  /*
   const logs = [
     "[12:18:04] Starting Weekly 7 Merge...",
     "[12:18:05] Reading Admin A.xlsx",
@@ -58,6 +110,7 @@ export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: 
     "[12:18:13] Processing formulas...",
     "[12:18:15] Writing output workbook...",
   ];
+  */
 
   return (
     <div className="max-w-7xl mx-auto p-8 space-y-6">
@@ -107,7 +160,7 @@ export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: 
           <div className="flex justify-between text-sm text-muted-foreground">
 
             <span>
-              62%
+              {progress.toFixed(0)}%
             </span>
 
             <span>
@@ -202,12 +255,12 @@ export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: 
 
             <ScrollArea className="h-[450px] rounded-lg border bg-black p-4">
 
-              <div className="font-mono text-sm text-green-400 space-y-2">
+              <div ref={consoleLogOutputRef} className="font-mono text-sm text-green-400 space-y-2">
 
                 {logs.map((log, index) => (
 
-                  <div key={index}>
-                    {log}
+                  <div key={index} title={log.timestamp}>
+                   {log.message}
                   </div>
 
                 ))}

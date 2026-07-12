@@ -17,9 +17,27 @@ electron.contextBridge.exposeInMainWorld('electron', {
   pickFile: () => ipcInvoke('pickFile'),
   pickFolder: () => ipcInvoke('pickFolder'),
   getAppVersion: () => ipcInvoke('getAppVersion'),
+  getEnvironment: () => ipcInvoke('getEnvironment'),
   getSettings: () => ipcInvoke('getSettings'),
   updateSettings: (payload?: any) => ipcSend('updateSettings', payload),
   startBatchJob: (config: BatchConfig) => ipcSend('startBatchJob', config),
+  // Expose a method to subscribe to logs with a cleanup function
+  /*processLog: (callback) => {
+    const subscription = (data: any) => callback(data);
+    ipcOn('processLog', subscription);
+    
+    // Return unsubscribe function to prevent memory leaks in React
+    return () => {
+      electron.ipcRenderer.removeListener('processLog', subscription);
+    };
+  },
+  logSender: (data: string) => ipcSend('processLog', data),
+  */
+  subscribeBatchLog: (callback) =>
+      ipcOn("batchLog", callback),
+
+  subscribeBatchProgress: (callback) =>
+      ipcOn("batchProgress", callback),
 } as Window['electron']);
 
 type IpcInvokeKey = keyof EventPayloadMapping;

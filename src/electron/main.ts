@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { ipcMainHandle, 
   ipcMainOn, 
   isDev,
+  ipcWebContentsSend,
   selectLocalFile,
   selectLocalFolder
 } from './util.js';
@@ -14,8 +15,10 @@ import { settingsManager } from './settings.js';
 
 import { BatchTest } from './modules/batch/batchTest.js';
 
+let mainWindow: BrowserWindow | null = null;
+
 app.on('ready', () => {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     webPreferences: {
       preload: getPreloadPath(),
     },
@@ -33,6 +36,7 @@ app.on('ready', () => {
     mainWindow.loadFile(getUIPath());
   }
 
+
   /* IPC Handlers */
 
   ipcMainOn('openFolder', (folderPath) => {
@@ -45,10 +49,16 @@ app.on('ready', () => {
   })
 
   ipcMainHandle('pickFile', async() => {
+    if (!mainWindow) {
+      throw new Error('Main window is not initialized');
+    }
     return await selectLocalFile(mainWindow);
   });
 
   ipcMainHandle('pickFolder', async() => {
+    if (!mainWindow) {
+      throw new Error('Main window is not initialized');
+    }
     return await selectLocalFolder(mainWindow);
   });
 
@@ -58,7 +68,11 @@ app.on('ready', () => {
 });
 
 ipcMainHandle('getAppVersion', () => {
-  return app.getVersion(); // Returns a string, matching our Mapping type
+  return app.getVersion(); 
+});
+
+ipcMainHandle('getEnvironment', () => {
+  return process.env.NODE_ENV || 'Development'; 
 });
 
 ipcMainHandle('getSettings', () => {
@@ -75,7 +89,13 @@ ipcMainOn('updateSettings', (payload) => {
 });
 
 ipcMainOn('startBatchJob', (config) => {
-  const processor = new BatchTest(config);
+  const ipcSender = (data: any) => {
+    //window.electron.processLog(data);
+  }
+  if (!mainWindow) {
+    throw new Error('Main window is not initialized');
+  }
+  const processor = new BatchTest({ ... config}, mainWindow.webContents);
   processor.execute();
 })
 

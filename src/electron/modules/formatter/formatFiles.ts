@@ -23,7 +23,8 @@ import { deepClone,
 export async function formatWorkbook(
     inputFile: string,
     dateRangeString: string,
-    arDate: string
+    arDate: string,
+    exportPath: string
 ): Promise<string> {
 
     const admin = getAdminName(inputFile);
@@ -146,7 +147,7 @@ export async function formatWorkbook(
     );
 
     const outputPath = path.join(
-            settingsManager.get('defaultExportPath'),
+            exportPath,
             `${admin} ar to ${fileFriendlyDate}.xlsx`
     );
 
