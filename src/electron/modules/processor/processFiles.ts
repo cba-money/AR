@@ -22,9 +22,14 @@ export async function processARFile(
     
     console.log(`\n${'='.repeat(100)}\nPROCESSING: ${filePath}\n${'='.repeat(100)}`);
     
-    const fileName = path.basename(filePath);
+    const fileName = path.basename(filePath).replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
+    const fileLoc = path.dirname(filePath);
     const companyName = getAdminName(filePath);
-    const outputPdfPath = filePath.replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
+    //const outputPdfPath = filePath.replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
+    const outputPdfPath = path.join(
+        fileLoc,
+        fileName
+    );
 
     const workbook = new ExcelJS.Workbook();
     try {
