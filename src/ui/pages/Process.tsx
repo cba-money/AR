@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+
+import { useRouter } from '@/hooks/useRouter.tsx';
+
 import {
   Card,
   CardContent,
@@ -22,7 +25,10 @@ import {
   Terminal,
 } from "lucide-react";
 
-export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+export default function ProcessingPage() {
+
+   const { navigate, path } = useRouter();
+
   const [logs, setLogs] = useState<BatchLog[]>([]);
   const [progress, setProgress] = useState<number>(0);
 
@@ -59,7 +65,7 @@ export default function ProcessingPage({onUpdatePage}: {onUpdatePage: (newPage: 
 
   useEffect(() => {
     if(progress >= 100){
-      onUpdatePage('complete');
+      navigate('/processing/complete');
     }
   }, [progress]);
 

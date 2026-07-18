@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useId } from "react";
 
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
+
+import { useRouter } from '@/hooks/useRouter.tsx';
+import { useAppSettings } from "@/hooks/useAppSettings.ts";
 
 import {
   Card,
@@ -23,6 +26,8 @@ import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
+//import { Textarea } from "@/components/ui/textarea.tsx";
+
 import {
   Select,
   SelectContent,
@@ -38,53 +43,91 @@ enum ThemeEnum {
 }
 
 type SettingsInputs = {
-  //theme: ThemeEnum;
-  exportPath: string;
-  tempFilesPath: string;
-
+  theme: ThemeEnum;
+  defaultExportPath: string;
+  tmpFolder: string;
 };
 
-export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+export default function SettingsPage() {
+
+  const { navigate, path } = useRouter();
+
   const form = useForm<SettingsInputs>({
     defaultValues:{
-      exportPath: ""
+      theme: ThemeEnum.system,
+      defaultExportPath: "",
+      tmpFolder: ""
     }
   });
+
+  //const defaultOutputFolderRef = useRef<HTMLInputElement | null>(null);
+
   //const onSubmit: SubmitHandler<SettingsInputs> = (data: SettingsInputs) => console.log(data);
     function onSubmit(data: SettingsInputs) {
     console.log(data);
   }
 
-  const [theme, setTheme] = useState<string>("");
-  const [defaultExportPath, setDefaultExportPath] = useState<string>("");
+  //const [theme, setTheme] = useState<string>("");
+  //const [defaultExportPath, setDefaultExportPath] = useState<string>("");
+
+  // Get settings on page load
+  /*
   useEffect(() => {
     window.electron.getSettings().then((currentSettings: AppSettings) => {
       setTheme(currentSettings.theme);
       setDefaultExportPath(currentSettings.defaultExportPath);
       form.reset({
-        exportPath: currentSettings.defaultExportPath,
-        //tempFilesPath: currentSettings.tempFilesPath,
+        theme: currentSettings.theme as ThemeEnum,
+        defaultExportPath: currentSettings.defaultExportPath,
+        tmpFolder: currentSettings.tmpFolder,
       });
     });
   }, []);
+  */
 
-  async function folderPickerDialog(){
+  const { settings, isLoading, error } = useAppSettings();
+  
+  useEffect(() => {
+    if(settings){
+      form.reset({
+          theme: settings.theme as ThemeEnum,
+          defaultExportPath: settings.defaultExportPath,
+          tmpFolder: settings.tmpFolder,
+        });
+    }
+  }, [settings])
+
+  // Open a dialog window to pick a folder
+  async function openFolderPickerDialog(formInput: keyof SettingsInputs){
       let path = await window.electron.pickFolder();
-      console.log(path);
+      //console.log(path);
+      if(path !== null){
+        //defaultOutputFolderRef.current.value = path;
+        //defaultOutputFolderRef.current = path;
+        form.setValue(formInput, path);
+        //console.log(path);
+      }
       return path;
   }
 
-  function ControlledSelect(apiData: any) {
+  function ControlledSelect(props: {
+    selectName: keyof SettingsInputs;
+    selectLabel: string;
+  }) {
     // Always provide a fallback ("") to prevent an initial 'undefined' state
-    const [selectedValue, setSelectedValue] = useState(apiData ?? "system");
+    const selectId = useId();
+    //const [selectedValue, setSelectedValue] = useState(props.apiData ?? "system");
 
     // Sync state if apiData loads late
+    /*
     useEffect(() => {
-      if (apiData?.status) {
-        setSelectedValue(apiData);
+      if (props.apiData?.status) {
+        setSelectedValue(props.apiData);
       }
-    }, [apiData]);
+    }, [props.apiData]);
+    */
 
+    /*
     return (
       <Select defaultValue={theme.toString()}>
           <SelectTrigger>
@@ -98,13 +141,97 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
           </SelectContent>
       </Select>
     );
+    */
+   
+    return (
+      <Controller
+        name={props.selectName}
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid} aria-label={props.selectLabel}>
+            <FieldLabel htmlFor={selectId}>
+              {props.selectLabel}
+            </FieldLabel>
+            <Select 
+              {...field} 
+              id={selectId}
+              aria-invalid={fieldState.invalid}
+              value={field.value}
+              onValueChange={field.onChange}
+            >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System Default</SelectItem>
+                </SelectContent>
+            </Select>
+          </Field>
+        )}
+      />
+    )
   }
 
-  return (
-    <div className="max-w-5xl mx-auto p-8 space-y-6">
+  function FileInputField(props: { 
+    inputName: keyof SettingsInputs;
+    inputLabel: string;
+  }){
+    const inputId = useId();
+    return (
+      <Controller
+        name={props.inputName}
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={inputId}>
+              {props.inputLabel}
+            </FieldLabel>
+            <div className="flex gap-2">
+              <Input
+                {...field}
+                id={inputId}
+                aria-invalid={fieldState.invalid}
+                placeholder="Choose a location..."
+                autoComplete="off"
+                className="inline-flex"
+                onClick={() => openFolderPickerDialog(props.inputName)} 
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => openFolderPickerDialog(props.inputName)} 
+                type="button"
+                className="inline-flex">
+                Browse
+              </Button>
+            </div>
+            {/*defaultValue={defaultExportPath}*/}
+            {fieldState.invalid && (
+              <FieldError errors={[fieldState.error]} />
+            )}
+          </Field>
+        )}
+      />
+    );
+  }
 
-      <div>
-        <h1 className="text-4xl font-bold">Settings</h1>
+  if (isLoading) {
+    return <div>Loading configuration...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading settings: {error.message}</div>;
+  }
+
+
+  return (
+    <div className="max-w-5xl mx-auto">
+
+      <div className="select-none">
+        <h1 className="text-3xl font-bold">
+          Settings
+        </h1>
         <p className="text-muted-foreground mt-2">
           Configure application preferences and processing options.
         </p>
@@ -112,9 +239,9 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
 
       {/* Appearance */}
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="form-settings" onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="select-none">
             <CardTitle>Appearance</CardTitle>
             <CardDescription>
               Customize the application's appearance.
@@ -124,9 +251,8 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
           <CardContent className="space-y-5">
 
             <div className="space-y-2">
-              <Label>Theme</Label>
 
-              <ControlledSelect apiData={theme} />
+              <ControlledSelect selectName="theme" selectLabel="Theme" />
               
             </div>
 
@@ -136,53 +262,70 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
         {/* File Locations */}
 
         <Card>
-          <CardHeader>
+          <CardHeader className="select-none">
             <CardTitle>File Locations</CardTitle>
           </CardHeader>
 
           <CardContent className="space-y-5">
 
             <div className="space-y-2">
-              <Label>Default Output Folder</Label>
 
               <div className="flex gap-2">
-                {/*<Input {...register('exportPath')} value={defaultExportPath} readOnly onClick={folderPickerDialog} />*/}
+                {/*<Input {...register('exportPath')} value={defaultExportPath} readOnly onClick={folderPickerDialog} />
                 <Controller
                   name="exportPath"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="form-rhf-demo-title">
-                        Bug Title
+                      <FieldLabel htmlFor="form-settings-default-output">
+                        Default Output Folder
                       </FieldLabel>
-                      <Input
-                        {...field}
-                        id="form-rhf-demo-title"
-                        aria-invalid={fieldState.invalid}
-                        placeholder="Login button not working on mobile"
-                        autoComplete="off"
-                      />
-                      {/*defaultValue={defaultExportPath}*/}
+                      <div className="flex gap-2">
+                        <Input
+                          {...field}
+                          id="form-settings-default-output"
+                          aria-invalid={fieldState.invalid}
+                          placeholder="Login button not working on mobile"
+                          autoComplete="off"
+                          className="inline-flex"
+                          onClick={() => openFolderPickerDialog('exportPath')} 
+                        />
+                        <Button 
+                          variant="outline" 
+                          onClick={() => openFolderPickerDialog('exportPath')} 
+                          type="button"
+                          className="inline-flex">
+                          Browse
+                        </Button>
+                      </div>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
+                      
                     </Field>
                   )}
                 />
-                <Button variant="outline" onClick={folderPickerDialog} type="button">
-                  Browse
-                </Button>
+                */}
+                  <FileInputField 
+                    inputName="defaultExportPath" 
+                    inputLabel="Default Output Folder" 
+                  />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Temporary Files</Label>
 
               <div className="flex gap-2">
+                {/*
                 <Input value="C:\\Temp\\ARDesktopSuite" readOnly />
                 <Button variant="outline">
                   Browse
                 </Button>
+                */}
+                <FileInputField 
+                  inputName="tmpFolder" 
+                  inputLabel="Temporary Files" 
+                />
               </div>
             </div>
 
@@ -192,7 +335,7 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
         {/* Processing */}
 
         <Card>
-          <CardHeader>
+          <CardHeader className="select-none">
             <CardTitle>Processing</CardTitle>
           </CardHeader>
 
@@ -241,7 +384,7 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
         {/* Updates */}
 
         <Card>
-          <CardHeader>
+          <CardHeader className="select-none">
             <CardTitle>Updates</CardTitle>
           </CardHeader>
 
@@ -269,11 +412,11 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
         {/* Diagnostics */}
 
         <Card>
-          <CardHeader>
+          <CardHeader className="select-none">
             <CardTitle>Diagnostics</CardTitle>
           </CardHeader>
 
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 space-x-2">
 
             <Button variant="secondary">
               Open Log Folder
@@ -294,7 +437,7 @@ export default function SettingsPage({onUpdatePage}: {onUpdatePage: (newPage: st
 
         <div className="flex justify-end gap-3">
 
-          <Button variant="outline" onClick={() => onUpdatePage('dashboard')} type="button">
+          <Button variant="outline" onClick={() => navigate('/')} type="button">
             Cancel
           </Button>
 

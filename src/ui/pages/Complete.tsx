@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useRouter } from '@/hooks/useRouter.tsx';
+
 import {
   Card,
   CardContent,
@@ -29,7 +31,9 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 
-export default function CompletePage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+export default function CompletePage() {
+  const { navigate, path } = useRouter();
+  
   const [processJob, setProcessJob] = useState<ProcessingJob>({} as ProcessingJob);
   
   async function getLastProcessJob() {
@@ -294,7 +298,7 @@ export default function CompletePage({onUpdatePage}: {onUpdatePage: (newPage: st
 
         </Button>
 
-        <Button onClick={() => onUpdatePage("dashboard")}>
+        <Button onClick={() => navigate("/")}>
 
           <Home className="mr-2 h-4 w-4" />
 

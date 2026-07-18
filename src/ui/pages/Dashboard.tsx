@@ -17,9 +17,21 @@ import {
   FolderOpen,
   X
 } from "lucide-react";
-export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+
+//import { useTheme } from '@/providers/theme-provider.tsx';
+import { useRouter } from '@/hooks/useRouter.tsx';
+
+export default function Dashboard() {
+
+    const { navigate, path } = useRouter();
 
     const [files, setFiles] = useState<string[]>([]);
+
+    /*
+    useEffect(() => {
+        theme.setTheme("light");
+    }, []);
+    */
 
     //const [processJob, setProcessJob] = useState<any>("");
 
@@ -92,11 +104,11 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
             files: files,
             arDate: "06/29/2026"
         } as BatchConfig);
-        onUpdatePage('process');
+        navigate('/process');
     }
 
     return (
-        <article>
+        <article className="dark:bg-gray-900 dark:text-white">
             <div className="mb-8 select-none">
                 <h2 className="text-3xl font-bold">
                     Dashboard
@@ -109,7 +121,7 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
 
             <div className="grid grid-cols-3 gap-6">
 
-                <Card className="col-span-2">
+                <Card className="col-span-2 dark:bg-gray-800">
 
                     <CardHeader>
                         <CardTitle className="select-none">
@@ -172,7 +184,7 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
 
                 </Card>
 
-                <Card>
+                <Card className="dark:bg-gray-800">
 
                     <CardHeader>
                         <CardTitle className="select-none">
@@ -198,7 +210,7 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
                     <Button
                         variant="outline"
                         className="w-full"
-                        onClick={() => onUpdatePage("settings")}
+                        onClick={() => navigate("/settings")}
                     >
                         Settings
                     </Button>
@@ -209,7 +221,7 @@ export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: strin
 
                 </Card>
 
-                <Card className="col-span-3">
+                <Card className="col-span-3 dark:bg-gray-800">
 
                     <CardHeader>
                         <CardTitle>

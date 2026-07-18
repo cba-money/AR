@@ -1,7 +1,7 @@
 {
   "name": "ar-desktop-suite",
   "private": true,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "main": "dist-electron/main.js",
   "description": "A/R formatter and processor for bulk Weekly 7 file batches, plus other utilities.",

@@ -20,7 +20,32 @@ import {
   FolderOpen,
 } from "lucide-react";
 
-export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+type ReportStatistic = {
+  label: string,
+  value: string | number,
+  style?: 'normal' | 'gray' | 'blue'
+};
+
+export default function ReportsPage() {
+  const statistics: ReportStatistic[] = [
+    {
+      label: "Reports Generated",
+      value: 148
+    },
+    {
+      label: "Processed Workbooks",
+      value: 2431
+    },
+    {
+      label: "Errors Detected",
+      value: 37
+    },
+    {
+      label: "Last Run",
+      value: "Today"
+    }
+  ];
+
   return (
     <div className="max-w-7xl mx-auto p-8 space-y-6">
 
@@ -28,7 +53,7 @@ export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: str
 
       <div className="flex justify-between items-center">
 
-        <div>
+        <div className="select-none">
           <h1 className="text-4xl font-bold">
             Reports
           </h1>
@@ -47,55 +72,29 @@ export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: str
 
       {/* Statistics */}
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">
-              Reports Generated
-            </div>
+        {
+          statistics.map((data, index) => {
+            return (
+              <Card aria-label={data.label} key={index}>
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground select-none">
+                    {data.label}
+                  </div>
 
-            <div className="text-3xl font-bold mt-2">
-              148
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">
-              Processed Workbooks
-            </div>
-
-            <div className="text-3xl font-bold mt-2">
-              2,431
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">
-              Errors Detected
-            </div>
-
-            <div className="text-3xl font-bold mt-2">
-              37
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">
-              Last Run
-            </div>
-
-            <div className="text-lg font-semibold mt-2">
-              Today
-            </div>
-          </CardContent>
-        </Card>
+                  <div className={`${typeof data.value == "string" ? 'text-lg' : 'text-3xl'} font-bold mt-2 select-all`}>
+                    {
+                      (typeof data.value == "string") ?
+                      data.value :
+                      data.value.toLocaleString()
+                    }
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        }
 
       </div>
 
@@ -103,13 +102,15 @@ export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: str
 
       <Card>
 
-        <CardHeader>
+        <CardHeader className="select-none">
           <CardTitle>Available Reports</CardTitle>
 
           <CardDescription>
             Generate operational and reconciliation reports.
           </CardDescription>
         </CardHeader>
+
+        <Separator />
 
         <CardContent className="space-y-4">
 
@@ -179,7 +180,7 @@ export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: str
 
       <Card>
 
-        <CardHeader>
+        <CardHeader className="select-none">
           <CardTitle>Recent Reports</CardTitle>
         </CardHeader>
 
@@ -258,7 +259,7 @@ export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: str
 
         <Card>
 
-          <CardHeader>
+          <CardHeader className="select-none">
             <CardTitle>
               Processing Activity
             </CardTitle>
@@ -290,7 +291,7 @@ export default function ReportsPage({onUpdatePage}: {onUpdatePage: (newPage: str
 
         <Card>
 
-          <CardHeader>
+          <CardHeader className="select-none">
             <CardTitle>
               Report Storage
             </CardTitle>

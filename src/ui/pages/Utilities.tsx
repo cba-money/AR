@@ -20,12 +20,12 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+export default function UtilitiesPage() {
   const utilities = [
     {
       title: "Merge Weekly 7 Files",
       description:
-        "Merge multiple Weekly 7 workbooks into a single consolidated workbook while preserving formatting and formulas. Useful for processing IAA and other multi-admin reports.",
+        "Merge multiple Weekly 7 workbooks into a single consolidated workbook while preserving formatting and formulas.",
       icon: FileStack,
       status: "Available",
       color: "default",
@@ -77,7 +77,7 @@ export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: s
 
       {/* Header */}
 
-      <div>
+      <div className="select-none">
         <h1 className="text-4xl font-bold">
           Utilities
         </h1>
@@ -90,7 +90,7 @@ export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: s
 
       {/* Quick Stats */}
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 select-none">
 
         <Card>
           <CardContent className="pt-6">
@@ -166,7 +166,7 @@ export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: s
 
                     <div>
 
-                      <CardTitle>
+                      <CardTitle className="select-none">
                         {tool.title}
                       </CardTitle>
 
@@ -178,7 +178,7 @@ export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: s
 
                   </div>
 
-                  <Badge variant={tool.color as any}>
+                  <Badge variant={tool.color as any} className="select-none">
                     {tool.status}
                   </Badge>
 
@@ -192,7 +192,7 @@ export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: s
 
                 <div className="flex justify-between items-center">
 
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground select-all">
 
                     <Clock className="h-4 w-4" />
 
@@ -219,7 +219,7 @@ export default function UtilitiesPage({onUpdatePage}: {onUpdatePage: (newPage: s
 
       {/* Information */}
 
-      <Card>
+      <Card className="select-none">
 
         <CardHeader>
 

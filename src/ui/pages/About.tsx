@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import { useRouter } from '@/hooks/useRouter.tsx';
+
 import {
   Card,
   CardContent,
@@ -10,7 +12,8 @@ import {
 import { Separator } from "@/components/ui/separator.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 
-export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+export default function About() {
+  const { navigate, path } = useRouter();
   const [appVersion, setAppVersion] = useState("0.0.0");
 
   async function displayAppVersion() {
@@ -143,7 +146,7 @@ export default function About({onUpdatePage}: {onUpdatePage: (newPage: string) =
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="select-none">
           <CardTitle>Third-Party Software</CardTitle>
         </CardHeader>
 

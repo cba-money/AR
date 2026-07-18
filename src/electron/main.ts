@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, nativeTheme } from 'electron';
 import { ipcMainHandle, 
   ipcMainOn, 
   isDev,
@@ -36,6 +36,8 @@ app.on('ready', () => {
   } else {
     mainWindow.loadFile(getUIPath());
   }
+
+  //nativeTheme.themeSource = 'dark';
 
 
   /* IPC Handlers */
