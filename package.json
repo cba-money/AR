@@ -1,7 +1,7 @@
 {
   "name": "ar-desktop-suite",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "main": "dist-electron/main.js",
   "description": "A/R formatter and processor for bulk Weekly 7 file batches, plus other utilities.",
@@ -38,6 +38,7 @@
     "react": "^18.3.1",
     "react-day-picker": "^10.0.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.82.0",
     "recharts": "^2.12.7",
     "shadcn": "^4.13.0",
     "tailwind-merge": "^3.6.0",

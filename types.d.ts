@@ -66,6 +66,7 @@ type EventPayloadMapping = {
   pickFile: any;
   pickFolder: any;
   startBatchJob: any;
+  getLatestJob: any;
   //processLog: any;
   //logSender: any;
   batchLog: BatchLog;
@@ -94,6 +95,7 @@ interface Window {
     pickFile: () => any;
     pickFolder: () => any;
     startBatchJob: (config: BatchConfig) => void;
+    getLatestJob: () => any;
     /*
     processLog: (
       callback: (data: any) => void
@@ -114,4 +116,23 @@ interface BatchConfig {
   files: string[];
   arDate: string; // e.g., '2026-07-11'
   monthRange: number[];
+}
+
+interface ProcessedFile {
+  admin: string;
+  status: "Not Started" | "Processing" | "Completed" | "Failed" | "Cancelled";
+  fileName: string;
+  filePath: string;
+}
+
+interface ProcessingJob {
+  jobId: string;
+  status: "Not Started" | "Processing" | "Completed" | "Failed" | "Cancelled";
+  processedFiles: string[];
+  completedAt: Date;
+}
+
+interface ProcessingJobs {
+  latestJob: string;
+  jobs: ProcessingJob[];
 }

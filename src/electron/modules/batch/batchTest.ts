@@ -11,6 +11,8 @@ import { settingsManager } from './../../settings.js';
 import { generateTotals } from './../totals/generateTotals.js';
 import { writeLogFile } from './writeLog.js';
 
+import { saveJob } from "./batchStore.js";
+
 import {
   extractMonthsAsNumbers,
   getLastThreeMonths
@@ -20,7 +22,7 @@ import { WebContents } from 'electron';
 
 import { ipcWebContentsSend } from "./../../util.js";
 
-type IpcSender = (data: any) => void;
+//type IpcSender = (data: any) => void;
 
 export class BatchTest{
     private batchId: string;
@@ -36,6 +38,8 @@ export class BatchTest{
     private grandTotal: number;
     private totalCommission: number;
 
+    private tmpPath: string;
+
     private percentage: number;
 
     //private logSender: IpcSender;
@@ -46,6 +50,9 @@ export class BatchTest{
         arDate: string;
         //monthRange: string | number[];
     }, webContents: WebContents){
+        //create tmp path if one doesn't exist
+        this.tmpPath = settingsManager.get('tmpFolder');
+
         let batchId = uuidv4();
         this.batchId = batchId;
         let runDate = new Date();
@@ -62,6 +69,7 @@ export class BatchTest{
           'export',
           this.batchId
         );
+        // create output path if one doesn't exist
         if (!fs.existsSync(this.exportPath)) {
             fs.mkdirSync(this.exportPath, { recursive: true });
         }
@@ -207,6 +215,12 @@ export class BatchTest{
         this.log(`Summary and reports completed. Generating log file.`);
         
         this.updatePercentage(1);
+        await saveJob({
+          jobId: this.batchId,
+          status: 'Completed',
+          processedFiles: this.files,
+          completedAt: new Date()
+        } as ProcessingJob)
         await writeLogFile(this.logs, this.batchId, this.exportPath);
         this.updatePercentage(1);
 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -29,6 +30,22 @@ import {
 } from "lucide-react";
 
 export default function CompletePage({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
+  const [processJob, setProcessJob] = useState<ProcessingJob>({} as ProcessingJob);
+  
+  async function getLastProcessJob() {
+    try {
+      const job = await window.electron.getLatestJob();
+      //console.log(`Current App Version: v${version}`); // Output: "Current App Version: v1.0.0"
+      setProcessJob(job);
+    } catch (error) {
+      //console.error("Failed to get version:", error);
+      //onUpdatePage("process");
+    }
+  }
+  useEffect(() => {
+    getLastProcessJob();
+  }, []);
+
   const admins = [
     {
       name: "John Smith",
@@ -79,6 +96,7 @@ export default function CompletePage({onUpdatePage}: {onUpdatePage: (newPage: st
 
             <p className="text-muted-foreground mt-2">
               Successfully processed 12 Weekly 7 workbooks.
+              
             </p>
 
           </div>

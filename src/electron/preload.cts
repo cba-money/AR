@@ -18,6 +18,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
   pickFolder: () => ipcInvoke('pickFolder'),
   getAppVersion: () => ipcInvoke('getAppVersion'),
   getEnvironment: () => ipcInvoke('getEnvironment'),
+  getLatestJob: () => ipcInvoke('getLatestJob'),
   getSettings: () => ipcInvoke('getSettings'),
   updateSettings: (payload?: any) => ipcSend('updateSettings', payload),
   startBatchJob: (config: BatchConfig) => ipcSend('startBatchJob', config),

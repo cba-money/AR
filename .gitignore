@@ -32,8 +32,10 @@ compile_commands.json
 /dist-electron/
 /dist-react/
 
-# program assets & folders
+# program assets & config/temp folders
 /export/
+/tmp/
+/latest-job.json
 
 .npmrc
 

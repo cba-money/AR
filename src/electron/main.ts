@@ -12,6 +12,7 @@ import { createTray } from './tray.js';
 import { createMenu } from './menu.js';
 
 import { settingsManager } from './settings.js';
+import { getLatestJob } from './modules/batch/batchStore.js';
 
 import { BatchTest } from './modules/batch/batchTest.js';
 
@@ -98,6 +99,11 @@ ipcMainOn('startBatchJob', (config) => {
   const processor = new BatchTest({ ... config}, mainWindow.webContents);
   processor.execute();
 })
+
+ipcMainHandle('getLatestJob', async() => {
+  const latestJob = await getLatestJob();
+  return latestJob;
+});
 
 function handleCloseEvents(mainWindow: BrowserWindow) {
   let willClose = false;

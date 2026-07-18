@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { DatePicker } from "@/components/DatePicker.tsx";
+import DatePicker from "@/components/DatePicker.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import {
   Home,
@@ -20,6 +20,24 @@ import {
 export default function Dashboard({onUpdatePage}: {onUpdatePage: (newPage: string) => void}) {
 
     const [files, setFiles] = useState<string[]>([]);
+
+    //const [processJob, setProcessJob] = useState<any>("");
+
+    /*
+    async function getLastProcessJob() {
+    try {
+      const job = await window.electron.getLatestJob();
+      //console.log(`Current App Version: v${version}`); // Output: "Current App Version: v1.0.0"
+      setProcessJob(job);
+      console.log(job);
+    } catch (error) {
+      //console.error("Failed to get version:", error);
+    }
+  }
+  useEffect(() => {
+    getLastProcessJob();
+  }, []);
+    */
 
     /*
     function addFile(filePath: string){

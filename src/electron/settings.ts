@@ -1,10 +1,15 @@
 import Store from 'electron-store';
 
+import path from 'path';
+
 // 2. Define default values
 const defaults: AppSettings = {
   theme: 'dark',
   defaultExportPath: process.cwd(),
-  tmpFolder: process.cwd(),
+  tmpFolder: path.join(
+    process.cwd(),
+    'tmp'
+  ),
   autoProcessingEnabled: false,
 };
 
