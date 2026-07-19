@@ -20,7 +20,7 @@ export async function processARFile(
     monthsToProcess: number[]
 ): Promise<ProcessResult | null> {
     
-    console.log(`\n${'='.repeat(100)}\nPROCESSING: ${filePath}\n${'='.repeat(100)}`);
+    //console.log(`\n${'='.repeat(100)}\nPROCESSING: ${filePath}\n${'='.repeat(100)}`);
     
     const fileName = path.basename(filePath).replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
     const fileLoc = path.dirname(filePath);
@@ -35,8 +35,9 @@ export async function processARFile(
     try {
         await workbook.xlsx.readFile(filePath);
     } catch (e) {
-        console.error("Failed to read Excel file", e);
-        return null;
+        //console.error("Failed to read Excel file", e);
+        //return null;
+        throw new Error("Failed to read Excel file");
     }
 
     const ws = workbook.worksheets[0];
@@ -44,13 +45,14 @@ export async function processARFile(
 
     const commissionCol = findCommissionColumn(ws);
     if (!commissionCol) {
-        console.log("✗ No Commission column found");
-        return null;
+        //console.log("✗ No Commission column found");
+        //return null;
+        throw new Error("✗ No Commission column found");
     }
-    console.log(`✓ Commission column: Column ${commissionCol}`);
+    //console.log(`✓ Commission column: Column ${commissionCol}`);
 
     const yellowCode = getYellowColorCode(ws);
-    console.log(`✓ Yellow color code identified: ${yellowCode}`);
+    //console.log(`✓ Yellow color code identified: ${yellowCode}`);
 
     const commPlus1 = commissionCol + 1;
     const commPlus4 = commissionCol + 4;
@@ -115,7 +117,7 @@ export async function processARFile(
         });
     }
 
-    console.log(`✓ Rows kept after filtering: ${dataRows.length}`);
+    //console.log(`✓ Rows kept after filtering: ${dataRows.length}`);
 
     // Sort Data
     const dataForSort: SortableRow[] = dataRows.map((rowData, idx) => {
@@ -162,14 +164,15 @@ export async function processARFile(
     const monthlySum = Object.values(monthlyTotals).reduce((sum, val) => sum + val, 0);
     const grandTotal = monthlySum; 
 
-    console.log(`✓ Verification:`);
-    console.log(`  - Direct sum of commissions:  $${directSum.toFixed(2)}`);
-    console.log(`  - Sum of monthly totals:      $${monthlySum.toFixed(2)}`);
-    console.log(`  - Grand total:                $${grandTotal.toFixed(2)}`);
+    //console.log(`✓ Verification:`);
+    //console.log(`  - Direct sum of commissions:  $${directSum.toFixed(2)}`);
+    //console.log(`  - Sum of monthly totals:      $${monthlySum.toFixed(2)}`);
+    //console.log(`  - Grand total:                $${grandTotal.toFixed(2)}`);
 
     if (Math.abs(directSum - monthlySum) > 0.01 || Math.abs(directSum - grandTotal) > 0.01) {
-        console.log(`✗ VERIFICATION FAILED - Totals don't match!`);
-        return null;
+        //console.log(`✗ VERIFICATION FAILED - Totals don't match!`);
+        //return null;
+        throw new Error("✗ VERIFICATION FAILED - Totals don't match!");
     }
 
     const monthNames: Record<number, string> = {
@@ -249,7 +252,7 @@ tr:nth-child(even) { background-color: #f9f9f9; }
         
         if (fs.existsSync(outputPdfPath)) {
             const pdfSize = fs.statSync(outputPdfPath).size;
-            console.log(`✓ PDF created: ${path.basename(outputPdfPath)} (${pdfSize.toLocaleString()} bytes)`);
+            //console.log(`✓ PDF created: ${path.basename(outputPdfPath)} (${pdfSize.toLocaleString()} bytes)`);
             
             return {
                 company: companyName,
@@ -261,11 +264,13 @@ tr:nth-child(even) { background-color: #f9f9f9; }
                 fileName: outputPdfPath
             };
         } else {
-            console.log(`✗ PDF creation failed (File not found after generation)`);
-            return null;
+            //console.log(``);
+            //return null;
+            throw new Error('✗ PDF creation failed (File not found after generation)');
         }
     } catch (error) {
-        console.error(`✗ Error generating PDF:`, error);
-        return null;
+        //console.error(`✗ Error generating PDF:`, error);
+        //return null;
+        throw new Error(`✗ Error generating PDF: ${error}`);
     }
 }

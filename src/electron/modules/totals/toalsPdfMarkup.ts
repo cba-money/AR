@@ -51,7 +51,7 @@ export function generateSummary(summaryData: {
     return `<div class="metrics-summary">${markup}</div>`;
 }
 
-export function generateTable(totalsByAdmin: Total[], monthRange: string[]) {
+export function generateTable(totalsByAdmin: AdminTotal[], monthRange: string[]) {
     const monthNames: Record<number, string> = {
         1: 'JANUARY', 2: 'FEBRUARY', 3: 'MARCH', 4: 'APRIL',
         5: 'MAY', 6: 'JUNE', 7: 'JULY', 8: 'AUGUST',
@@ -72,7 +72,7 @@ export function generateTable(totalsByAdmin: Total[], monthRange: string[]) {
 
     // 1. Build Data Rows Safely based on monthRange sequence
     for (let i = 0; i < totalsByAdmin.length; i++) {
-        let rowCellsMarkup = `<td><span class="admin-name">${totalsByAdmin[i].adminName}</span></td>`;
+        let rowCellsMarkup = `<td><span class="admin-name">${totalsByAdmin[i].admin}</span></td>`;
         
         for (let j = 0; j < monthRange.length; j++) {
             const currentMonthKey = monthRange[j]; // Format: "04/2026"

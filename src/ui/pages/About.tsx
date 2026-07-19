@@ -12,9 +12,77 @@ import {
 import { Separator } from "@/components/ui/separator.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 
+type AboutModule = {
+  name: string;
+  description: string;
+  longDescription?: string;
+  version?: string;
+};
+
+type ThirdPartySoftware = {
+  name: string;
+  links?: {
+    npm?: string;
+    docs?: string;
+    github?: string;
+    website?: string;
+  }
+};
+
 export default function About() {
   const { navigate, path } = useRouter();
   const [appVersion, setAppVersion] = useState("0.0.0");
+
+  const includedModules: AboutModule[] = [
+    {
+      name: "A/R Formatter",
+      description: "Formats and standardizes Accounts Receivable spreadsheets.",
+      longDescription: `The formatter takes in a Weekly 7 spreadsheet and an A/R to date. It then creates a 4 month spread (or range) which it uses to trim the Weekly 7 file. It then flattens all formulas, adds a header row, and generates an output Excel sheet within the given range.`,
+    },
+    {
+      name: 'A/R Processor',
+      description: "Processes formatted spreadsheets to calculate outstanding A/R monthly and grand totals.",
+    },
+    {
+      name: 'A/R Batch Processor',
+      description: 'Allows for batch processing of Weekly 7 spreadsheets.'
+    },
+    {
+      name: 'Weekly 7 Validator',
+      description: 'Validates formatting and data consistency in Weekly 7 spreadsheets.'
+    },
+    {
+      name: 'Weekly 7 Merge Utility',
+      description: 'Merges multiple Weekly 7 spreadsheets into a single spreadsheet.'
+    },
+    {
+      name: 'Check Run Auditor',
+      description: 'Compares check registers and payment files for discrepancies.'
+    },
+    {
+      name: 'Reports',
+      description: 'Generates operational and reconciliation reports.'
+    }
+  ];
+
+  const softwareList: ThirdPartySoftware[] = [
+    {
+      name: "Electron",
+      links: {
+        github: "https://github.com/electron/electron",
+        npm: "https://www.npmjs.com/package/electron",
+        website: "https://www.electronjs.org/"
+      }
+    },
+    {
+      name: "React",
+      links: {
+        github: "https://github.com/react/react",
+        npm: "https://www.npmjs.com/package/react",
+        website: "https://react.dev/"
+      }
+    }
+  ];
 
   async function displayAppVersion() {
     try {
@@ -117,31 +185,29 @@ export default function About() {
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-3">
-          <div>
-            <strong>A/R Formatter</strong>
-            <p className="text-muted-foreground">
-              Formats and standardizes Accounts Receivable spreadsheets.
-            </p>
-          </div>
+        <CardContent>
+          <ul className="space-y-3">
+          {
+            includedModules.map((module, index) => {
+              return (
+                <li key={index}>
+                  <div>
+                    <strong>
+                      {module.name}
+                    </strong>
+                    <p className="text-muted-foreground">
+                      {module.description}
+                    </p>
+                  </div>
+                  {
+                    (index < includedModules.length-1) ? (<Separator className="my-4" />) : ""
+                  }
+                </li>
+              )
+            })
+          }
+          </ul>
 
-          <Separator />
-
-          <div>
-            <strong>Check Run Auditor</strong>
-            <p className="text-muted-foreground">
-              Compares check registers and payment files for discrepancies.
-            </p>
-          </div>
-
-          <Separator />
-
-          <div>
-            <strong>Reports</strong>
-            <p className="text-muted-foreground">
-              Generates operational and reconciliation reports.
-            </p>
-          </div>
         </CardContent>
       </Card>
 
@@ -151,6 +217,22 @@ export default function About() {
         </CardHeader>
 
         <CardContent className="space-y-2 text-sm">
+          {
+            softwareList.map((item, index) => {
+              return (
+                <div key={index}>
+                <p>
+                  {item.name}
+                </p>
+                {/*item.links?.website ? (
+                    <a target="_parent" href={item.links?.website}>
+                      Website
+                    </a>
+                  ) : ""*/}
+                </div>
+              );
+            })
+          }
           <p>Electron</p>
           <p>React</p>
           <p>Vite</p>

@@ -1,3 +1,4 @@
+/*
 import path from 'path';
 import fs from 'fs';
 
@@ -29,7 +30,7 @@ export class BatchTest{
     private runDate: Date;
     private files: string[];
     private arDate: string;
-    private monthRange: string[]; 
+    private monthRange: string[];
 
     private logs: string[] = [];
     private exportPath: string;
@@ -206,7 +207,6 @@ export class BatchTest{
 
         const totalsPdf = await generateTotals({
           grandTotal: this.grandTotal,
-          totalCommission: this.totalCommission,
           totalsByAdmin: this.totals
         }, new Date(this.arDate), this.monthRange, this.exportPath, this.batchId);
         this.log(`Generated totals PDF: ${totalsPdf ?? ``}`);
@@ -215,12 +215,14 @@ export class BatchTest{
         this.log(`Summary and reports completed. Generating log file.`);
         
         this.updatePercentage(1);
+        /*
         await saveJob({
           jobId: this.batchId,
           status: 'Completed',
           processedFiles: this.files,
           completedAt: new Date()
         } as ProcessingJob)
+        
         await writeLogFile(this.logs, this.batchId, this.exportPath);
         this.updatePercentage(1);
 
@@ -229,3 +231,4 @@ export class BatchTest{
     }
 
 }
+  */

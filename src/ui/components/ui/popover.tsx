@@ -7,13 +7,6 @@ function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
-
-/*
-function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
-}
-*/
-
 /* Forward ref fix to avoid ref error */
 
 const PopoverTrigger = React.forwardRef<

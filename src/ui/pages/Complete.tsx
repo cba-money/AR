@@ -31,14 +31,28 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 
+import { 
+    openOutputFolder, 
+    addRightEllipsis
+} from '@/lib/utils.ts';
+
+import { formatDuration } from '@/lib/utils.ts';
+
 export default function CompletePage() {
   const { navigate, path } = useRouter();
   
-  const [processJob, setProcessJob] = useState<ProcessingJob>({} as ProcessingJob);
-  
+  const [processJob, setProcessJob] = useState<ProcessingJobDatabase>({} as ProcessingJobDatabase);
+  const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
+
+  // Metrics
+  const [processDuration, setProcessDuration] = useState<string>("");
+  const [totals, setTotals] = useState<AdminTotal[]>([] as AdminTotal[]);
+  const [grandTotal, setGrandTotal] = useState<number>(0);
+
+  /*
   async function getLastProcessJob() {
     try {
-      const job = await window.electron.getLatestJob();
+      const job = await window.electron.getCurrentJob();
       //console.log(`Current App Version: v${version}`); // Output: "Current App Version: v1.0.0"
       setProcessJob(job);
     } catch (error) {
@@ -46,10 +60,33 @@ export default function CompletePage() {
       //onUpdatePage("process");
     }
   }
+  */
+
+  const currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
+
   useEffect(() => {
-    getLastProcessJob();
+    async function getCurrentJob(){
+        const loadCurrentJob = await window.electron.getCurrentJob();
+        //console.log(currentJob);
+        setProcessJob(loadCurrentJob.job);
+        setProcessedFiles(loadCurrentJob.job.processedFiles);
+        setProcessDuration(formatDuration(loadCurrentJob.job.startedAt, loadCurrentJob.job.completedAt ?? new Date()));
+        setTotals(loadCurrentJob.job.totals);
+        setGrandTotal(loadCurrentJob.job.grandTotal);
+    }
+    getCurrentJob();
   }, []);
 
+  const monthNames: Record<number, string> = {
+    1: 'JANUARY', 2: 'FEBRUARY', 3: 'MARCH', 4: 'APRIL',
+    5: 'MAY', 6: 'JUNE', 7: 'JULY', 8: 'AUGUST',
+    9: 'SEPTEMBER', 10: 'OCTOBER', 11: 'NOVEMBER', 12: 'DECEMBER'
+  };
+
+  /*
   const admins = [
     {
       name: "John Smith",
@@ -73,6 +110,7 @@ export default function CompletePage() {
       total: "$202,898.76",
     },
   ];
+  */
 
   const reports = [
     "Monthly Summary.xlsx",
@@ -92,14 +130,14 @@ export default function CompletePage() {
 
           <CheckCircle2 className="h-16 w-16 text-green-600" />
 
-          <div>
+          <div className="select-none">
 
             <h1 className="text-4xl font-bold">
               Processing Complete
             </h1>
 
             <p className="text-muted-foreground mt-2">
-              Successfully processed 12 Weekly 7 workbooks.
+              Successfully processed {processedFiles.length ?? 0} Weekly 7 workbooks.
               
             </p>
 
@@ -120,7 +158,7 @@ export default function CompletePage() {
             </div>
 
             <div className="text-3xl font-bold">
-              12
+              {processedFiles.length ?? 0}
             </div>
           </CardContent>
         </Card>
@@ -156,7 +194,7 @@ export default function CompletePage() {
             </div>
 
             <div className="text-3xl font-bold">
-              2m 14s
+              {processDuration}
             </div>
           </CardContent>
         </Card>
@@ -167,7 +205,7 @@ export default function CompletePage() {
 
       <Card>
 
-        <CardHeader>
+        <CardHeader className="select-none">
 
           <CardTitle>
             A/R Totals by Administrator
@@ -183,15 +221,25 @@ export default function CompletePage() {
 
           <Table>
 
-            <TableHeader>
+            <TableHeader className="select-none">
 
               <TableRow>
 
-                <TableHead>Administrator</TableHead>
-                <TableHead>April</TableHead>
-                <TableHead>May</TableHead>
-                <TableHead>June</TableHead>
-                <TableHead>Total</TableHead>
+                <TableHead className="font-bold">
+                  Administrator
+                </TableHead>
+                {
+                  Object.keys(totals[0]?.arPerMonth ?? {}).map((month, index) => {
+                    return (
+                      <TableHead className="font-bold" key={index}>
+                        {monthNames[Number.parseInt(month)]}
+                      </TableHead>
+                    );
+                  })
+                }
+                <TableHead className="font-bold">
+                  Total
+                </TableHead>
 
               </TableRow>
 
@@ -199,20 +247,26 @@ export default function CompletePage() {
 
             <TableBody>
 
-              {admins.map((admin) => (
+              {totals.map((adminTotal) => (
 
-                <TableRow key={admin.name}>
+                <TableRow key={adminTotal.admin}>
 
                   <TableCell className="font-medium">
-                    {admin.name}
+                    {adminTotal.admin}
                   </TableCell>
 
-                  <TableCell>{admin.april}</TableCell>
-                  <TableCell>{admin.may}</TableCell>
-                  <TableCell>{admin.june}</TableCell>
+                  {
+                    Object.entries(adminTotal.arPerMonth).map(([month, monthTotal], index) => {
+                      return (
+                        <TableCell title={`${month}`} key={index}>
+                          {currencyFormatter.format(monthTotal)}
+                        </TableCell>
+                      );
+                    })
+                  }
 
                   <TableCell className="font-semibold">
-                    {admin.total}
+                    {currencyFormatter.format(adminTotal.grandTotal)}
                   </TableCell>
 
                 </TableRow>
@@ -290,7 +344,7 @@ export default function CompletePage() {
 
       <div className="flex justify-between">
 
-        <Button variant="outline">
+        <Button variant="outline" type="button" onClick={() => {openOutputFolder()}}>
 
           <FolderOpen className="mr-2 h-4 w-4" />
 

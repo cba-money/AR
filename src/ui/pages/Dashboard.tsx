@@ -20,6 +20,13 @@ import {
 
 //import { useTheme } from '@/providers/theme-provider.tsx';
 import { useRouter } from '@/hooks/useRouter.tsx';
+import { useLatestJob } from '@/hooks/useLatestJobs.ts';
+
+import { 
+    openOutputFolder, 
+    addLeftEllipsis,
+    filePickerDialog
+} from '@/lib/utils.ts';
 
 export default function Dashboard() {
 
@@ -27,11 +34,7 @@ export default function Dashboard() {
 
     const [files, setFiles] = useState<string[]>([]);
 
-    /*
-    useEffect(() => {
-        theme.setTheme("light");
-    }, []);
-    */
+    const [ latestJob, setLatestJob ] = useState({});
 
     //const [processJob, setProcessJob] = useState<any>("");
 
@@ -51,11 +54,14 @@ export default function Dashboard() {
   }, []);
     */
 
-    /*
-    function addFile(filePath: string){
-        setFiles((prevFiles) => [filePath, ...prevFiles]);
-    }
-    */
+    useEffect(() => {
+        async function getLatestJob(){
+            const getCurrentJob = await window.electron.getCurrentJob();
+            setLatestJob(latestJob);
+        }
+        getLatestJob();
+    }, [])
+
     function addFile(filePath: string) {
         setFiles((prevFiles) => {
             const isDuplicate = prevFiles.some(
@@ -73,32 +79,6 @@ export default function Dashboard() {
         setFiles(filesMutated);
     }
 
-    async function filePickerDialog(){
-        let path = await window.electron.pickFile();
-        return path;
-    }
-
-    function openOutputFolder(){
-        return window.electron.openFolder("output");
-    }
-
-    function addLeftEllipsis(str: string, maxLength: number): string {
-        if (str.length <= maxLength) {
-            return str;
-        }
-        
-        // Calculate how many characters of the original string we need to keep
-        const ellipsis = '...';
-        const keepLength = maxLength - ellipsis.length;
-        
-        // Prevent negative substring lengths if maxLength is exceptionally small
-        if (keepLength <= 0) {
-            return ellipsis;
-        }
-
-        return ellipsis + str.slice(-keepLength);
-    }
-
     async function startProcess(){
         window.electron.startBatchJob({
             files: files,
@@ -108,7 +88,7 @@ export default function Dashboard() {
     }
 
     return (
-        <article className="dark:bg-gray-900 dark:text-white">
+        <div className="dark:bg-gray-900">
             <div className="mb-8 select-none">
                 <h2 className="text-3xl font-bold">
                     Dashboard
@@ -116,6 +96,7 @@ export default function Dashboard() {
 
                 <p className="text-muted-foreground">
                     Upload multiple Weekly 7 files for batch A/R formatting and processing.
+                    {JSON.stringify(latestJob, null, 2)}
                 </p>
             </div>
 
@@ -186,17 +167,25 @@ export default function Dashboard() {
 
                 <Card className="dark:bg-gray-800">
 
-                    <CardHeader>
+                    <CardHeader className="w-full text-center">
                         <CardTitle className="select-none">
-                            Quick Actions
+                            Configure Batch Options
                         </CardTitle>
                     </CardHeader>
 
-                    <CardContent className="space-y-3">
+                    <CardContent className="grid pt-5 space-y-3">
+
+                    <div className="flex w-full justify-self-center">
+                        <DatePicker 
+                            fieldLabel="Choose A/R To Date:"
+                        />
+                    </div>
 
                     <Button className="w-full" disabled={files.length > 0 ? false : true} onClick={() => startProcess()}>
                         Start Processing
                     </Button>
+
+                    <Separator />
 
                     <Button
                         variant="secondary"
@@ -208,14 +197,14 @@ export default function Dashboard() {
                     </Button>
 
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         className="w-full"
                         onClick={() => navigate("/settings")}
                     >
+                        <Settings className="mr-2 h-4 w-4" />
                         Settings
                     </Button>
 
-                    <DatePicker />
 
                     </CardContent>
 
@@ -263,14 +252,19 @@ export default function Dashboard() {
                                 Completed
                             </span>
                         </div>
-
+                        <a onClick={() => navigate('/process')}>
+                            Process
+                        </a>
+                        <a onClick={() => navigate('/process/complete')}>
+                            Complete
+                        </a>
                     </div>
 
                     </CardContent>
 
                 </Card>
             </div>
-        </article>
+        </div>
     );
 
 }

@@ -3,9 +3,11 @@ import path from "path";
 
 import { settingsManager } from './../../settings.js';
 
-import { deepClone,
+import {
+    createSpreadsheetFileName,
+    deepClone,
     convertDateFormat,
-    getAdminName,
+    getFormatterAdminName,
     getRangeEndingDate,
     copyCell,
     parseMonthRanges,
@@ -27,9 +29,9 @@ export async function formatWorkbook(
     exportPath: string
 ): Promise<string> {
 
-    const admin = getAdminName(inputFile);
+    const admin = getFormatterAdminName(inputFile);
 
-    console.log(`Starting formatting of ${admin}...`);
+    //console.log(`Starting formatting of ${admin}...`);
 
     const allowedMonths =
         parseMonthRanges(dateRangeString);
@@ -146,25 +148,23 @@ export async function formatWorkbook(
         arDate
     );
 
-    const outputPath = path.join(
-            exportPath,
-            `${admin} ar to ${fileFriendlyDate}.xlsx`
+    const outputFileName = createSpreadsheetFileName(
+        admin, 
+        fileFriendlyDate
     );
 
-    console.log(`Generating formatted Excel file: ${outputPath}`);
-    /*
-    const outputPath =
-        path.join(
-            os.tmpdir(),
-            `filtered-${Date.now()}.xlsx`
-        );
-    */
+    const outputPath = path.join(
+        exportPath,
+        outputFileName
+    );
+
+    //console.log(`Generating formatted Excel file: ${outputPath}`);
 
     outputSheet.spliceRows(
         1,
         0,
         [
-            `${getAdminName(inputFile)} A/R to ${getRangeEndingDate(dateRangeString)}`
+            `${admin} A/R to ${getRangeEndingDate(dateRangeString)}`
         ]
     );
 

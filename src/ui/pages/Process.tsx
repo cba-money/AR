@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 
 import { useRouter } from '@/hooks/useRouter.tsx';
+import { useAppSettings } from "@/hooks/useAppSettings.ts";
+
+import { useFileStatus } from '@/hooks/useFileStatus.ts';
 
 import {
   Card,
@@ -25,12 +28,27 @@ import {
   Terminal,
 } from "lucide-react";
 
+import { 
+    openOutputFolder, 
+    addRightEllipsis,
+    getFileName
+} from '@/lib/utils.ts';
+
 export default function ProcessingPage() {
 
-   const { navigate, path } = useRouter();
+  const { navigate, path } = useRouter();
+  const { settings, error } = useAppSettings();
+  const { data: files, isLoading, isError } = useFileStatus();
 
-  const [logs, setLogs] = useState<BatchLog[]>([]);
+  const [ currentJob, setCurrentJob ] = useState<ProcessingJobDatabase>({} as ProcessingJobDatabase);
+
+  const [logs, setLogs] = useState<ProcessLogEntry[]>([]);
   const [progress, setProgress] = useState<number>(0);
+  const [currentFile, setCurrentFile] = useState<string>("");
+  const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
+  const [allFiles, setAllFiles] = useState<string[]>([""]);
+
+  //const [fileStatusList, setFileStatusList]
 
   const consoleLogOutputRef = useRef<HTMLDivElement | null>(null);
 
@@ -46,26 +64,50 @@ export default function ProcessingPage() {
   })
   */
  useEffect(() => {
-    const unsubscribe =
-        window.electron.subscribeBatchLog(log => {
-            setLogs(prev => [...prev, log]);
+    async function initialize() {
+      const existingLogs = await window.electron.getBatchLogs();
+      setLogs(existingLogs);
+
+      const unsubscribe = window.electron.subscribeBatchLog(log => {
+          setLogs(prev => [...prev, log]);
+      });
+
+      return unsubscribe;
+    }
+    async function getCurrentJob(){
+        const loadCurrentJob = await window.electron.getCurrentJob();
+        //console.log(currentJob);
+        setCurrentJob(loadCurrentJob.job);
+        setProgress(loadCurrentJob.job.percentage);
+        setCurrentFile(loadCurrentJob.job.currentFile);
+        setProcessedFiles(loadCurrentJob.job.processedFiles);
+        setAllFiles(loadCurrentJob.job.files);
+    }
+    async function updateProgress(){
+      const unsubscribe =
+        window.electron.subscribeBatchProgress(progress => {
+            setProgress(progress.percentage);
+            setCurrentFile(progress.currentFile);
+            //console.log(progress);
         });
 
-    return unsubscribe;
+      return unsubscribe;
+    }
+    
+    initialize();
+    getCurrentJob();
+    updateProgress();
  }, []);
 
+ /*
  useEffect(() => {
-    const unsubscribe =
-        window.electron.subscribeBatchProgress(progress => {
-            setProgress(progress.percent);
-        });
-
-    return unsubscribe;
+    
   }, []);
+*/
 
   useEffect(() => {
     if(progress >= 100){
-      navigate('/processing/complete');
+      //navigate('/processing/complete');
     }
   }, [progress]);
 
@@ -81,6 +123,7 @@ export default function ProcessingPage() {
 
   //const progress = 62;
 
+  /*
   const files = [
     {
       name: "Admin A - Weekly 7.xlsx",
@@ -103,6 +146,7 @@ export default function ProcessingPage() {
       status: "Waiting",
     },
   ];
+  */
 
   /*
   const logs = [
@@ -118,12 +162,24 @@ export default function ProcessingPage() {
   ];
   */
 
+  if (isLoading) {
+    return <div className="p-6 text-center">Loading file statuses...</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 text-red-500 bg-red-50 rounded-md">
+        Error loading files: {error instanceof Error ? error.message : 'Unknown error'}
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-8 space-y-6">
 
       {/* Header */}
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center select-none">
 
         <div>
 
@@ -132,7 +188,7 @@ export default function ProcessingPage() {
           </h1>
 
           <p className="text-muted-foreground mt-2">
-            Weekly 7 Merge Utility
+            A/R to {currentJob?.arDate}
           </p>
 
         </div>
@@ -145,7 +201,7 @@ export default function ProcessingPage() {
 
       {/* Progress */}
 
-      <Card>
+      <Card className="select-none">
 
         <CardHeader>
 
@@ -154,7 +210,7 @@ export default function ProcessingPage() {
           </CardTitle>
 
           <CardDescription>
-            Processing 3 of 5 workbooks
+            Processing {processedFiles.length ?? 0} of {(allFiles.length ?? 0) * 2} workbooks
           </CardDescription>
 
         </CardHeader>
@@ -172,7 +228,7 @@ export default function ProcessingPage() {
             <span>
               Current File:
               <strong className="ml-1">
-                Admin C - Weekly 7.xlsx
+                {currentFile}
               </strong>
             </span>
 
@@ -188,7 +244,7 @@ export default function ProcessingPage() {
 
         <Card>
 
-          <CardHeader>
+          <CardHeader className="select-none">
 
             <CardTitle>
               Files
@@ -198,11 +254,12 @@ export default function ProcessingPage() {
 
           <CardContent className="space-y-2">
 
-            {files.map((file) => (
+            {files && files.length > 0 ? (files.map((file: ProcessedInputFile, index: number) => (
 
               <div
-                key={file.name}
-                className="flex justify-between items-center rounded-lg border p-3"
+                key={index}
+                title={file.fullPath}
+                className="flex justify-between items-center rounded-lg border p-3 cursor-default"
               >
 
                 <div className="flex items-center gap-2">
@@ -210,7 +267,7 @@ export default function ProcessingPage() {
                   <FileSpreadsheet className="h-4 w-4" />
 
                   <span className="text-sm">
-                    {file.name}
+                    {addRightEllipsis(getFileName(file.fileName) ?? '', 30)}
                   </span>
 
                 </div>
@@ -223,8 +280,8 @@ export default function ProcessingPage() {
                   <LoaderCircle className="animate-spin text-blue-600 h-5 w-5" />
                 )}
 
-                {file.status === "Waiting" && (
-                  <Badge variant="secondary">
+                {file.status === "Not Started" && (
+                  <Badge variant="secondary" className="select-none">
                     Waiting
                   </Badge>
                 )}
@@ -235,7 +292,7 @@ export default function ProcessingPage() {
 
               </div>
 
-            ))}
+            ))): ""}
 
           </CardContent>
 
@@ -265,8 +322,8 @@ export default function ProcessingPage() {
 
                 {logs.map((log, index) => (
 
-                  <div key={index} title={log.timestamp}>
-                   {log.message}
+                  <div key={index} title={log.entryDate?.toDateString() || ""}>
+                   <span className="select-none">[{log?.entryDate?.toLocaleTimeString()}]&nbsp;</span><span className={`${log.type === 'error' ? 'text-red-600' : 'text-gray-300'} select-none`}>[{log.type.toUpperCase()}]</span> {log.message}
                   </div>
 
                 ))}
@@ -289,17 +346,19 @@ export default function ProcessingPage() {
 
           <div>
 
-            <div className="font-semibold">
+            <div className="font-semibold select-none">
               Output Folder
             </div>
 
-            <div className="text-sm text-muted-foreground">
-              C:\Reports\Weekly7\Output
+            <div className="text-sm text-muted-foreground select-all">
+              {settings?.defaultExportPath ?? "Settings loading..."}
             </div>
 
           </div>
 
-          <Button variant="outline">
+          <Button variant="outline" type="button" onClick={() => {
+            openOutputFolder();
+          }}>
 
             <FolderOpen className="mr-2 h-4 w-4" />
 

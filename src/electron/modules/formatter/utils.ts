@@ -3,6 +3,10 @@ import path from "path";
 
 // --- Helper Functions ---
 
+export function createSpreadsheetFileName(admin: string, arDate: string){
+    return `${admin} ar to ${arDate}.xlsx`;
+}
+
 /*
     Deep Clone Helper
     Helps copy style and formatting from source document
@@ -31,7 +35,7 @@ export function convertDateFormat(dateStr: string): string {
 /*
     Pull Admin name from filename
 */
-export function getAdminName(inputFile: string): string {
+export function getFormatterAdminName(inputFile: string): string {
     const fileName = path.basename(inputFile);
     const match = fileName.match(/^(.*?)\s*-\s*Weekly/i);
     if (match) {

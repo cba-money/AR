@@ -35,6 +35,7 @@ compile_commands.json
 # program assets & config/temp folders
 /export/
 /tmp/
+/db/
 /latest-job.json
 
 .npmrc

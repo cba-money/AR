@@ -12,8 +12,7 @@ import { generatePdfLocally } from '../processor/generatePdf.js';
 
 export async function generateTotals(totals: {
     grandTotal: number;
-    totalCommission: number;
-    totalsByAdmin: Total[];
+    totalsByAdmin: AdminTotal[];
 }, arDate: Date, dateRange: string[], exportPath: string, runId: string){
     const currencyFormatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -42,7 +41,7 @@ export async function generateTotals(totals: {
         },
         { 
             title: 'Total Commissions',
-            value: `${currencyFormatter.format(totals.totalCommission)}`
+            value: `${currencyFormatter.format(totals.grandTotal)}`
         }
     ])}    
 
