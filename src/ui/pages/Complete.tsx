@@ -154,7 +154,7 @@ export default function CompletePage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm text-muted-foreground">
-              Files Processed
+              Files Exported
             </div>
 
             <div className="text-3xl font-bold">

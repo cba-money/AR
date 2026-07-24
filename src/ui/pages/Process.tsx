@@ -111,6 +111,7 @@ export default function ProcessingPage() {
     }
   }, [progress]);
 
+  /*
   useEffect(() => {
     if(consoleLogOutputRef.current){
       //consoleLogOutputRef.current?.lastElementChild?.scrollIntoView({ behavior: 'smooth' });
@@ -120,6 +121,7 @@ export default function ProcessingPage() {
       });
     }
   }, [logs]);
+  */
 
   //const progress = 62;
 

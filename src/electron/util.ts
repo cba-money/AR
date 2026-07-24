@@ -38,12 +38,25 @@ export function validateEventFrame(frame: WebFrameMain | null) {
   if (!frame) {
     throw new Error('Malicious event');
   }
+  /*
   if (isDev() && new URL(frame.url).host === 'localhost:5123') {
     return;
   }
   if (frame.url !== pathToFileURL(getUIPath()).toString()) {
     throw new Error('Malicious event');
   }
+  */
+  if (isDev()) {
+      if (new URL(frame.url).host === "localhost:5123") {
+          return;
+      }
+  } else {
+      if (new URL(frame.url).protocol === "file:") {
+          return;
+      }
+  }
+
+  throw new Error("Malicious event");
 }
 
 export async function selectLocalFile(mainWindow: BrowserWindow){
