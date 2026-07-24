@@ -1,4 +1,4 @@
-export function getMonthRange(dateStr: string, months: number = 3): string[] {
+export function getMonthRange(dateStr: string, months: number = 4): string[] {
   // 1. Parse the mm/dd/yyyy string
   const [monthStr, , yearStr] = dateStr.split('/');
   

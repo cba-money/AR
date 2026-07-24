@@ -115,7 +115,7 @@ export class BatchJobRunner extends EventEmitter {
             } as ProcessedInputFile);
         }
 
-        this.monthRange = getMonthRange(this.arDate, 4);
+        this.monthRange = getMonthRange(this.arDate, 3);
         
         this.grandTotal = 0;
         this.percentage = 0;
