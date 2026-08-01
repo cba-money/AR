@@ -60,11 +60,18 @@ export default function App() {
   const { settings, isLoading, error } = useAppSettings();
   const { theme, setTheme } = useTheme();
 
+  /*
   useEffect(() => {
     if(settings){
       setTheme(settings.theme);
     }
   }, [settings])
+  */
+ useEffect(() => {
+    if (settings?.theme && settings.theme !== theme) {
+      setTheme(settings.theme);
+    }
+  }, [settings?.theme, theme, setTheme]);
 
   /*
   const routes = [
