@@ -28,6 +28,10 @@ compile_commands.json
 /npm/path.txt
 /npm/checksums.json
 
+# test results
+/test-results/
+playwright-report/
+
 # electron dist
 /dist-electron/
 /dist-react/
