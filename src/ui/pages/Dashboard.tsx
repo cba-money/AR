@@ -18,9 +18,7 @@ import {
   X
 } from "lucide-react";
 
-//import { useTheme } from '@/providers/theme-provider.tsx';
 import { useRouter } from '@/hooks/useRouter.tsx';
-import { useLatestJob } from '@/hooks/useLatestJobs.ts';
 
 import { 
     openOutputFolder, 
@@ -35,24 +33,6 @@ export default function Dashboard() {
     const [files, setFiles] = useState<string[]>([]);
 
     const [ latestJob, setLatestJob ] = useState({});
-
-    //const [processJob, setProcessJob] = useState<any>("");
-
-    /*
-    async function getLastProcessJob() {
-    try {
-      const job = await window.electron.getLatestJob();
-      //console.log(`Current App Version: v${version}`); // Output: "Current App Version: v1.0.0"
-      setProcessJob(job);
-      console.log(job);
-    } catch (error) {
-      //console.error("Failed to get version:", error);
-    }
-  }
-  useEffect(() => {
-    getLastProcessJob();
-  }, []);
-    */
 
     useEffect(() => {
         async function getLatestJob(){
@@ -258,6 +238,12 @@ export default function Dashboard() {
                         <a onClick={() => navigate('/process/complete')}>
                             Complete
                         </a>
+                        <Button onClick={async() => {
+                            let runs = await window.electron.checkRuns();
+                            console.log(runs);
+                        }}>
+                            Check Runs Test
+                        </Button>
                     </div>
 
                     </CardContent>

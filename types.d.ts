@@ -62,6 +62,7 @@ type Log = {
 type EventPayloadMapping = {
   getAppVersion: any;
   getEnvironment: any;
+  getOsPlatform: any;
   getSettings: any;
   updateSettings: any;
   openFolder: any;
@@ -75,6 +76,7 @@ type EventPayloadMapping = {
   batchLog: ProcessLogEntry;
   getBatchLogs: any;
   batchProgress: BatchProgress;
+  checkRuns: any;
 };
 
 type UnsubscribeFunction = () => void;
@@ -93,6 +95,7 @@ interface Window {
     */
     getAppVersion: () => any;
     getEnvironment: () => any;
+    getOsPlatform: () => any;
     updateSettings: (payload: any) => void;
     getSettings: () => any;
     openFolder: (folderPath: any) => void;
@@ -102,6 +105,7 @@ interface Window {
     getCurrentJob: () => any;
     getBatchLogs: () => any;
     getFileStatus: () => any;
+    checkRuns: () => any;
     /*
     processLog: (
       callback: (data: any) => void

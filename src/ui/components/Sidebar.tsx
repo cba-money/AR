@@ -40,12 +40,6 @@ export default function Sidebar() {
         title: "Learn more about this app"
       },
       {
-        label: "Weekly 7 Validator",
-        icon: <ClipboardCheck className="mr-2 h-4 w-4" />,
-        url: '/modules/validate',
-        title: "Validate format of Weekly 7 file"
-      },
-      {
         label: "Reports",
         icon: <BarChart3 className="mr-2 h-4 w-4" />,
         url: '/reports'
@@ -63,6 +57,16 @@ export default function Sidebar() {
         title: "Adjust the settings for this app"
       }
     ];
+
+    /*
+      Removed:
+      {
+        label: "Weekly 7 Validator",
+        icon: <ClipboardCheck className="mr-2 h-4 w-4" />,
+        url: '/modules/validate',
+        title: "Validate format of Weekly 7 file"
+      },
+    */
 
     return (
       <aside className="w-64 border-r bg-background dark:bg-gray-800">

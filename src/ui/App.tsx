@@ -23,24 +23,14 @@ import { Spinner } from '@/components/ui/spinner.tsx'
 import Sidebar from "@/components/Sidebar.tsx";
 
 
-// Pages
-/*
-import Dashboard from "@/pages/Dashboard.tsx";
-import About from "@/pages/About.tsx";
-import SettingsPage from "@/pages/Settings.tsx";
-import Reports from "@/pages/Reports.tsx";
-import Utilities from "@/pages/Utilities.tsx";
-import Weekly7ValidatorPage from "@/pages/Validator.tsx";
-
-import Complete from "@/pages/Complete.tsx";
-import ProcessingPage from '@/pages/Process.tsx';
-*/
 const Dashboard = lazy(() => import("@/pages/Dashboard.tsx"));
 const About = lazy(() => import("@/pages/About.tsx"));
 const SettingsPage = lazy(() => import("@/pages/Settings.tsx"));
 const Reports = lazy(() => import("@/pages/Reports.tsx"));
 const Utilities = lazy(() => import("@/pages/Utilities.tsx"));
-const Weekly7ValidatorPage = lazy(() => import("@/pages/Validator.tsx"));
+const Weekly7ValidatorPage = lazy(() => import("@/pages/utilities/Validator.tsx"));
+const Weekly7MergePage = lazy(() => import("@/pages/utilities/Merge.tsx"));
+const ChecksRegisterAuditorPage = lazy(() => import("@/pages/utilities/Checks.tsx"));
 const ProcessingPage = lazy(() => import('@/pages/Process.tsx'));
 const Complete = lazy(() => import("@/pages/Complete.tsx"));
 
@@ -50,7 +40,9 @@ const ROUTES_CONFIG = [
   { path: "/settings", element: <SettingsPage /> },
   { path: "/reports", element: <Reports /> },
   { path: "/utilities", element: <Utilities /> },
-  { path: "/modules/validate", element: <Weekly7ValidatorPage /> },
+  { path: "/utils/validate", element: <Weekly7ValidatorPage /> },
+  { path: "/utils/checks", element: <ChecksRegisterAuditorPage /> },
+  { path: "/utils/merge", element: <Weekly7MergePage /> },
   { path: "/process", element: <ProcessingPage /> },
   { path: "/process/complete", element: <Complete /> }
 ];
@@ -60,55 +52,11 @@ export default function App() {
   const { settings, isLoading, error } = useAppSettings();
   const { theme, setTheme } = useTheme();
 
-  /*
-  useEffect(() => {
-    if(settings){
-      setTheme(settings.theme);
-    }
-  }, [settings])
-  */
  useEffect(() => {
     if (settings?.theme && settings.theme !== theme) {
       setTheme(settings.theme);
     }
   }, [settings?.theme, theme, setTheme]);
-
-  /*
-  const routes = [
-    {
-      path: "/",
-      element: <Dashboard />
-    },
-    {
-      path: "/about",
-      element: <About />
-    },
-    {
-      path: "/settings",
-      element: <SettingsPage />
-    },
-    {
-      path: "/reports",
-      element: <Reports />
-    },
-    {
-      path: "/utilities",
-      element: <Utilities />
-    },
-    {
-      path: "/modules/validate",
-      element: <Weekly7ValidatorPage />
-    },
-    {
-      path: "/process",
-      element: <ProcessingPage />
-    },
-    {
-      path: "/process/complete",
-      element: <Complete />
-    }
-  ];
-  */
 
   const PageLoader = () => (
     <Card className='relative w-full h-full bg-gray-200 border-0 select-none opacity-50'>

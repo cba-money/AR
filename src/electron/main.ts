@@ -1,4 +1,7 @@
 import path from 'path';
+import * as fs from 'fs';
+
+//const os = require('os');
 
 import { app, BrowserWindow, ipcMain, shell, nativeTheme } from 'electron';
 import { ipcMainHandle, 
@@ -23,6 +26,8 @@ import { JsonDatabase } from "./lib/db/json.js";
 import { cwd } from 'process';
 
 import { JSONFilePreset } from 'lowdb/node';
+
+import { CheckRegisterAuditor } from './modules/checks/checkRegisterAuditor.js';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -125,8 +130,73 @@ ipcMainHandle('getEnvironment', () => {
   return process.env.NODE_ENV || 'Development'; 
 });
 
+ipcMainHandle('getOsPlatform', () => {
+  //return process.platform;
+  //return os.platform();
+  return process.platform;
+});
+
 ipcMainHandle('getSettings', () => {
     return settingsManager.getStore();
+});
+
+ipcMainHandle('checkRuns', () => {
+  async function handleAudit(registerFile: File, runFile: File) {
+    const auditor = new CheckRegisterAuditor();
+
+    // Listen to events to update your UI
+    auditor.on('progress', (msg) => console.log(msg));
+    auditor.on('discrepancy', (issue) => console.warn('Found issue:', issue));
+    
+    try {
+      const registerBuffer = await registerFile.arrayBuffer();
+      const runBuffer = await runFile.arrayBuffer();
+
+      // Run the process
+      const result = await auditor.process(registerBuffer, runBuffer);
+
+      // Save files directly in the browser (or send to Electron Main process to save)
+      downloadBuffer(result.modifiedRunBuffer, path.join(cwd(), 'modified-check-run.xlsx'));
+      downloadBuffer(result.modifiedRegisterBuffer, path.join(cwd(), 'modified-check-register.xlsx'));
+      downloadBuffer(result.discrepanciesBuffer, path.join(cwd(), 'discrepancies.xlsx'));
+
+    } catch (error) {
+      console.error('Audit failed:', error);
+    }
+  }
+
+  // Helper to trigger browser downloads from a buffer
+  function downloadBuffer(buffer: Uint8Array, filename: string) {
+    // Make a plain Uint8Array copy to ensure underlying buffer is a regular ArrayBuffer
+    // (avoids passing SharedArrayBuffer to Blob which some environments disallow)
+    const copy = buffer.slice();
+    const blob = new Blob([copy], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    /*
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    */
+  fs.writeFileSync(filename, buffer);
+  }
+  //const filePath = path.join(, 'example.txt');
+  const checkRegisterPath = 'C:\\Users\\TylerRRuff\\Downloads\\8942 Cashed (1).xlsx';
+  const checkRunPath = 'C:\\Users\\TylerRRuff\\Downloads\\01.01to05.04.2026.xlsx';
+  const chekcRegisterfileBuffer = fs.readFileSync(checkRegisterPath);
+  const chekcRunfileBuffer = fs.readFileSync(checkRunPath);
+  const checkRegisterFileName = path.basename(checkRegisterPath);
+  const checkRunFileName = path.basename(checkRunPath);
+  const checkRegisterFileObject = new File([chekcRegisterfileBuffer], checkRegisterFileName, {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // Adjust the MIME type as needed
+  });
+    const checkRunFileObject = new File([chekcRunfileBuffer], checkRunFileName, {
+    type: 'application/vnd.ms-excel', // Adjust the MIME type as needed
+  });
+  handleAudit(checkRegisterFileObject, checkRunFileObject);
 });
 
 // React sends this to update settings
@@ -197,7 +267,6 @@ ipcMainOn('startBatchJob', async (config) => {
     console.log(error);
   }
 });
-
 
 ipcMainHandle('getCurrentJob', async() => {
   //const latestJob = await getLatestJob();

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
+import { set } from "date-fns/set";
 
 type AboutModule = {
   name: string;
@@ -32,6 +33,8 @@ type ThirdPartySoftware = {
 export default function About() {
   const { navigate, path } = useRouter();
   const [appVersion, setAppVersion] = useState("0.0.0");
+  const [appEnvironment, setAppEnvironment] = useState("Unknown");
+  const [appPlatform, setAppPlatform] = useState("Unknown");
 
   const includedModules: AboutModule[] = [
     {
@@ -95,8 +98,30 @@ export default function About() {
     }
   }
 
+  async function getAppEnvironment() {
+      try{
+        const environment = await window.electron.getEnvironment();
+        setAppEnvironment(environment.charAt(0).toUpperCase() + environment.slice(1));
+      } catch (error) {{
+        setAppEnvironment("Development");
+      }
+    }
+  }
+
+  async function getOsPlatform() {
+    try{
+      const platform = await window.electron.getOsPlatform();
+      setAppPlatform(platform.charAt(0).toUpperCase() + platform.slice(1));
+    } catch (error) {{
+      setAppPlatform("Unknown");
+    }
+  }
+}
+
   useEffect(() => {
     displayAppVersion();
+    getAppEnvironment();
+    getOsPlatform();
   }, [])
 
   return (
@@ -145,7 +170,7 @@ export default function About() {
               Build
             </span>
             <span className="select-all">
-              Release
+              {appEnvironment}
             </span>
           </div>
 
@@ -154,7 +179,7 @@ export default function About() {
               Platform
             </span>
             <span className="select-all">
-              Windows
+              {appPlatform}
             </span>
           </div>
         </CardContent>
@@ -254,8 +279,52 @@ export default function About() {
         <CardContent>
           <p>
             For technical support, feature requests, or bug reports,
-            contact your system administrator or software provider.
+            contact Ruff or submit an issue on GitHub.
           </p>
+          <ul className="list-disc ml-6 space-y-2 text-muted-foreground my-5 px-2">
+            <li className="select-none py-1">
+              <a href="https://github.com/cba-money/AR/issues" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                Bug Reports & Feature Requests
+              </a>
+            </li>
+            <li className="select-none py-1">
+              <a href="mailto:rufft@cbamoney.com" className="text-blue-600 hover:underline">
+                Critical Support Issues
+              </a>
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="select-none">
+            Other Links
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <p>
+            For technical support, feature requests, or bug reports,
+            contact Ruff or submit an issue on GitHub.
+          </p>
+          <ul className="list-disc ml-6 space-y-2 text-muted-foreground my-5 px-2">
+            <li className="select-none py-1">
+              <a href="https://github.com/cba-money/AR/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                Project GitHub Repository
+              </a>
+            </li>
+            <li className="select-none py-1">
+              <a href="https://github.com/cba-money/AR/releases" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                Releases & Downloads
+              </a>
+            </li>
+            <li className="select-none py-1">
+              <a href="https://ar.cbautils.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                Project Website
+              </a>
+            </li>
+          </ul>
         </CardContent>
       </Card>
 

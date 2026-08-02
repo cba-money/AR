@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 
+import { useRouter } from "@/hooks/useRouter.tsx";
+
 import {
   FileStack,
   ShieldCheck,
@@ -21,6 +23,9 @@ import {
 } from "lucide-react";
 
 export default function UtilitiesPage() {
+
+  const { navigate, path } = useRouter();
+
   const utilities = [
     {
       title: "Merge Weekly 7 Files",
@@ -29,6 +34,7 @@ export default function UtilitiesPage() {
       icon: FileStack,
       status: "Available",
       color: "default",
+      launchPath: "/utils/merge",
     },
     {
       title: "Weekly 7 Validator",
@@ -37,14 +43,16 @@ export default function UtilitiesPage() {
       icon: ShieldCheck,
       status: "Available",
       color: "default",
+      launchPath: "/utils/validate",
     },
     {
-      title: "Weekly 7 Reader / Processor",
+      title: "Check Register Auditor",
       description:
-        "Extract, analyze, and process Weekly 7 workbook data for downstream reporting and automation.",
+        "Compare the Checks Register and Checks Run files to identify discrepancies, errors, and warnings.",
       icon: FileSpreadsheet,
       status: "Available",
       color: "default",
+      launchPath: "/utils/checks",
     },
     {
       title: "Pay Histories Generator",
@@ -53,6 +61,7 @@ export default function UtilitiesPage() {
       icon: FileSpreadsheet,
       status: "Coming Soon",
       color: "secondary",
+      launchPath: "",
     },
     {
       title: "Workbook Cleaner",
@@ -61,6 +70,7 @@ export default function UtilitiesPage() {
       icon: Sparkles,
       status: "Coming Soon",
       color: "secondary",
+      launchPath: "",
     },
     {
       title: "Batch Excel Processor",
@@ -69,6 +79,7 @@ export default function UtilitiesPage() {
       icon: Wrench,
       status: "Planned",
       color: "outline",
+      launchPath: "",
     },
   ];
 
@@ -200,7 +211,9 @@ export default function UtilitiesPage() {
 
                   </div>
 
-                  <Button disabled={tool.status !== "Available"}>
+                  <Button disabled={tool.status !== "Available"} onClick={() => {
+                    if(tool.status === "Available") navigate(tool.launchPath);
+                  }}>
                     Launch
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>

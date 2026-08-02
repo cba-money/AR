@@ -18,12 +18,14 @@ electron.contextBridge.exposeInMainWorld('electron', {
   pickFolder: () => ipcInvoke('pickFolder'),
   getAppVersion: () => ipcInvoke('getAppVersion'),
   getEnvironment: () => ipcInvoke('getEnvironment'),
+  getOsPlatform: () => ipcInvoke('getOsPlatform'),
   getCurrentJob: () => ipcInvoke('getCurrentJob'),
   getFileStatus: () => ipcInvoke('getFileStatus'),
   getSettings: () => ipcInvoke('getSettings'),
   updateSettings: (payload?: any) => ipcSend('updateSettings', payload),
   startBatchJob: (config: BatchConfig) => ipcSend('startBatchJob', config),
   getBatchLogs: () => ipcInvoke("getBatchLogs"),
+  checkRuns: () => ipcInvoke("checkRuns"),
   // Expose a method to subscribe to logs with a cleanup function
   /*processLog: (callback) => {
     const subscription = (data: any) => callback(data);
