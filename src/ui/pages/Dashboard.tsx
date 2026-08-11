@@ -32,6 +32,8 @@ export default function Dashboard() {
 
     const [files, setFiles] = useState<string[]>([]);
 
+    const [ arToDate, setArToDate ] = useState<Date | undefined>(new Date());
+
     const [ latestJob, setLatestJob ] = useState({});
 
     useEffect(() => {
@@ -60,10 +62,18 @@ export default function Dashboard() {
     }
 
     async function startProcess(){
+        /*console.log(`${arToDate
+                ? arToDate.toLocaleDateString()
+                : "No date selected"}`);*/
+
+        if(arToDate === undefined) return alert("Please select an A/R To Date before starting the process.");
+        if(files.length === 0) return alert("Please select at least one file before starting the process.");
+
         window.electron.startBatchJob({
             files: files,
-            arDate: "06/29/2026"
+            arDate: arToDate.toLocaleDateString()
         } as BatchConfig);
+        
         navigate('/process');
     }
 
@@ -76,7 +86,6 @@ export default function Dashboard() {
 
                 <p className="text-muted-foreground">
                     Upload multiple Weekly 7 files for batch A/R formatting and processing.
-                    {JSON.stringify(latestJob, null, 2)}
                 </p>
             </div>
 
@@ -158,6 +167,8 @@ export default function Dashboard() {
                     <div className="flex w-full justify-self-center">
                         <DatePicker 
                             fieldLabel="Choose A/R To Date:"
+                            date={arToDate}
+                            onDateChange={setArToDate}
                         />
                     </div>
 
@@ -232,18 +243,6 @@ export default function Dashboard() {
                                 Completed
                             </span>
                         </div>
-                        <a onClick={() => navigate('/process')}>
-                            Process
-                        </a>
-                        <a onClick={() => navigate('/process/complete')}>
-                            Complete
-                        </a>
-                        <Button onClick={async() => {
-                            let runs = await window.electron.checkRuns();
-                            console.log(runs);
-                        }}>
-                            Check Runs Test
-                        </Button>
                     </div>
 
                     </CardContent>
@@ -254,3 +253,18 @@ export default function Dashboard() {
     );
 
 }
+
+/*
+<a onClick={() => navigate('/process')}>
+    Process
+</a>
+<a onClick={() => navigate('/process/complete')}>
+    Complete
+</a>
+<Button onClick={async() => {
+    let runs = await window.electron.checkRuns();
+    console.log(runs);
+}}>
+    Check Runs Test
+</Button>
+*/

@@ -86,9 +86,10 @@ export default function ProcessingPage() {
     async function updateProgress(){
       const unsubscribe =
         window.electron.subscribeBatchProgress(progress => {
+            if(progress.percentage >= 100) navigate('/process/complete');
+            
             setProgress(progress.percentage);
             setCurrentFile(progress.currentFile);
-            //console.log(progress);
         });
 
       return unsubscribe;
