@@ -1,3 +1,4 @@
+/*
 export function getMonthRange(dateStr: string, months: number = 4): string[] {
   // 1. Parse the mm/dd/yyyy string
   const [monthStr, , yearStr] = dateStr.split('/');
@@ -25,6 +26,28 @@ export function getMonthRange(dateStr: string, months: number = 4): string[] {
     result.push(`${formattedMonth}/${formattedYear}`);
   }
   
+  return result;
+}
+*/
+export function getMonthRange(dateStr: string, monthsBack: number = 3): string[] {
+  const [monthStr, , yearStr] = dateStr.split('/');
+
+  const targetMonth = parseInt(monthStr, 10) - 1;
+  const targetYear = parseInt(yearStr, 10);
+
+  const result: string[] = [];
+
+  for (let i = monthsBack; i >= 0; i--) {
+    const date = new Date(targetYear, targetMonth, 1);
+
+    date.setMonth(targetMonth - i);
+
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    result.push(`${month}/${year}`);
+  }
+
   return result;
 }
 
