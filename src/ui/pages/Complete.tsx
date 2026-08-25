@@ -71,11 +71,14 @@ export default function CompletePage() {
     async function getCurrentJob(){
         const loadCurrentJob = await window.electron.getCurrentJob();
         //console.log(currentJob);
-        setProcessJob(loadCurrentJob.job);
-        setProcessedFiles(loadCurrentJob.job.processedFiles);
-        setProcessDuration(formatDuration(loadCurrentJob.job.startedAt, loadCurrentJob.job.completedAt ?? new Date()));
-        setTotals(loadCurrentJob.job.totals);
-        setGrandTotal(loadCurrentJob.job.grandTotal);
+
+        if(loadCurrentJob?.job){
+          setProcessJob(loadCurrentJob.job);
+          setProcessedFiles(loadCurrentJob.job.processedFiles ?? []);
+          setProcessDuration(formatDuration(loadCurrentJob.job.startedAt, loadCurrentJob.job.completedAt ?? new Date()));
+          setTotals(loadCurrentJob.job.totals ?? []);
+          setGrandTotal(loadCurrentJob.job.grandTotal ?? 0);
+        }
     }
     getCurrentJob();
   }, []);

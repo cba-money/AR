@@ -74,6 +74,7 @@ export default function ProcessingPage() {
 
       return unsubscribe;
     }
+    /*
     async function getCurrentJob(){
         const loadCurrentJob = await window.electron.getCurrentJob();
         //console.log(currentJob);
@@ -82,6 +83,18 @@ export default function ProcessingPage() {
         setCurrentFile(loadCurrentJob.job.currentFile);
         setProcessedFiles(loadCurrentJob.job.processedFiles);
         setAllFiles(loadCurrentJob.job.files);
+    }
+    */
+   async function getCurrentJob(){
+      const loadCurrentJob = await window.electron.getCurrentJob();
+      
+      if (loadCurrentJob?.job) {
+        setCurrentJob(loadCurrentJob.job);
+        setProgress(loadCurrentJob.job.percentage ?? 0);
+        setCurrentFile(loadCurrentJob.job.currentFile ?? "");
+        setProcessedFiles(loadCurrentJob.job.processedFiles ?? []);
+        setAllFiles(loadCurrentJob.job.files ?? []);
+      }
     }
     async function updateProgress(){
       const unsubscribe =
@@ -213,7 +226,7 @@ export default function ProcessingPage() {
           </CardTitle>
 
           <CardDescription>
-            Processing {processedFiles.length ?? 0} of {(allFiles.length ?? 0) * 2} workbooks
+            Processing {processedFiles?.length ?? 0} of {(allFiles?.length ?? 0) * 2} workbooks
           </CardDescription>
 
         </CardHeader>

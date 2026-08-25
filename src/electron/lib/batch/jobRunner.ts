@@ -13,6 +13,7 @@ import {
   getMonthRange,
   extractMonthsAsNumbers,
   generateLogEntry,
+  buildMonthRangeString,
   wait
 } from './util.js';
 
@@ -434,7 +435,7 @@ export class BatchJobRunner extends EventEmitter {
 
                     const formatted = await formatWorkbook(
                         this.files[i], 
-                        `${this.monthRange[0]},${this.monthRange[1]},${this.monthRange[2]}`, 
+                        buildMonthRangeString(this.monthRange),
                         this.arDate,
                         this.exportPath
                     );

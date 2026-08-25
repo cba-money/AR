@@ -1,3 +1,13 @@
+export function buildMonthRangeString(monthRange: string[]): string {
+  let fullString = '';
+  for (let i = 0; i < monthRange.length; i++) {
+    fullString += monthRange[i];
+    if (i < monthRange.length - 1) {
+      fullString += ',';
+    }
+  }
+  return fullString;
+}
 /*
 export function getMonthRange(dateStr: string, months: number = 4): string[] {
   // 1. Parse the mm/dd/yyyy string
