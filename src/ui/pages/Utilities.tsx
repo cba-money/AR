@@ -28,12 +28,30 @@ export default function UtilitiesPage() {
 
   const utilities = [
     {
+      title: "Batch A/R Processor",
+      description:
+        "Run A/R format and process against multiple Weekly 7 spreadsheets.",
+      icon: Wrench,
+      status: "Available",
+      color: "outline",
+      launchPath: "/",
+    },
+    {
+      title: "Check Runs Utility",
+      description:
+        "Compare the Check Register and Check Run files to identify discrepancies.",
+      icon: FileSpreadsheet,
+      status: "Available",
+      color: "default",
+      launchPath: "/utils/checks",
+    },
+    {
       title: "Merge Weekly 7 Files",
       description:
         "Merge multiple Weekly 7 workbooks into a single consolidated workbook while preserving formatting and formulas.",
       icon: FileStack,
-      status: "Available",
-      color: "default",
+      status: "Coming Soon",
+      color: "secondary",
       launchPath: "/utils/merge",
     },
     {
@@ -41,25 +59,16 @@ export default function UtilitiesPage() {
       description:
         "Validate Weekly 7 reports for missing worksheets, formatting errors, invalid totals, and data inconsistencies.",
       icon: ShieldCheck,
-      status: "Available",
-      color: "default",
+      status: "Coming Soon",
+      color: "secondary",
       launchPath: "/utils/validate",
-    },
-    {
-      title: "Check Register Auditor",
-      description:
-        "Compare the Checks Register and Checks Run files to identify discrepancies, errors, and warnings.",
-      icon: FileSpreadsheet,
-      status: "Available",
-      color: "default",
-      launchPath: "/utils/checks",
     },
     {
       title: "Pay Histories Generator",
       description:
         "Generate pay histories from imported spreadsheets.",
       icon: FileSpreadsheet,
-      status: "Coming Soon",
+      status: "Planned",
       color: "secondary",
       launchPath: "",
     },
@@ -68,17 +77,8 @@ export default function UtilitiesPage() {
       description:
         "Remove unused formatting, hidden rows, blank worksheets, and optimize workbook size.",
       icon: Sparkles,
-      status: "Coming Soon",
-      color: "secondary",
-      launchPath: "",
-    },
-    {
-      title: "Batch Excel Processor",
-      description:
-        "Run multiple workbook utilities against an entire folder in one operation.",
-      icon: Wrench,
       status: "Planned",
-      color: "outline",
+      color: "secondary",
       launchPath: "",
     },
   ];
@@ -101,16 +101,16 @@ export default function UtilitiesPage() {
 
       {/* Quick Stats */}
 
-      <div className="grid grid-cols-4 gap-4 select-none">
+      <div className="grid grid-cols-3 gap-4 select-none">
 
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm text-muted-foreground">
-              Installed Utilities
+              Total Utilities
             </div>
 
             <div className="text-3xl font-bold mt-2">
-              6
+              {utilities.length}
             </div>
           </CardContent>
         </Card>
@@ -122,7 +122,7 @@ export default function UtilitiesPage() {
             </div>
 
             <div className="text-3xl font-bold mt-2 text-green-600">
-              3
+              {utilities.filter((tool) => tool.status === "Available").length}
             </div>
           </CardContent>
         </Card>
@@ -134,19 +134,7 @@ export default function UtilitiesPage() {
             </div>
 
             <div className="text-3xl font-bold mt-2">
-              2
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">
-              Last Used
-            </div>
-
-            <div className="text-lg font-semibold mt-2">
-              Today
+              {utilities.filter((tool) => tool.status === "Coming Soon" || tool.status === "Planned").length}
             </div>
           </CardContent>
         </Card>
@@ -204,11 +192,11 @@ export default function UtilitiesPage() {
                 <div className="flex justify-between items-center">
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground select-all">
-
+                    {/*
+                    // More info can go here, will be used in the future
                     <Clock className="h-4 w-4" />
-
                     Last used 2 days ago
-
+                    */}
                   </div>
 
                   <Button disabled={tool.status !== "Available"} onClick={() => {

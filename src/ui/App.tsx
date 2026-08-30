@@ -5,7 +5,6 @@
   Main Application Component
 */
 
-//import { useEffect, useMemo, useState } from 'react';
 import { lazy, Suspense, useEffect } from 'react';
 
 import "./App.css";

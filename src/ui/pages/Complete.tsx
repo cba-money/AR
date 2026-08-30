@@ -49,19 +49,6 @@ export default function CompletePage() {
   const [totals, setTotals] = useState<AdminTotal[]>([] as AdminTotal[]);
   const [grandTotal, setGrandTotal] = useState<number>(0);
 
-  /*
-  async function getLastProcessJob() {
-    try {
-      const job = await window.electron.getCurrentJob();
-      //console.log(`Current App Version: v${version}`); // Output: "Current App Version: v1.0.0"
-      setProcessJob(job);
-    } catch (error) {
-      //console.error("Failed to get version:", error);
-      //onUpdatePage("process");
-    }
-  }
-  */
-
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -70,7 +57,8 @@ export default function CompletePage() {
   useEffect(() => {
     async function getCurrentJob(){
         const loadCurrentJob = await window.electron.getCurrentJob();
-        //console.log(currentJob);
+
+        //console.log(processJob);
 
         if(loadCurrentJob?.job){
           setProcessJob(loadCurrentJob.job);
@@ -89,37 +77,9 @@ export default function CompletePage() {
     9: 'SEPTEMBER', 10: 'OCTOBER', 11: 'NOVEMBER', 12: 'DECEMBER'
   };
 
-  /*
-  const admins = [
-    {
-      name: "John Smith",
-      april: "$84,250.15",
-      may: "$81,774.44",
-      june: "$90,102.18",
-      total: "$256,126.77",
-    },
-    {
-      name: "Jane Doe",
-      april: "$74,445.00",
-      may: "$79,832.13",
-      june: "$77,503.90",
-      total: "$231,781.03",
-    },
-    {
-      name: "Robert Johnson",
-      april: "$62,118.22",
-      may: "$71,333.44",
-      june: "$69,447.10",
-      total: "$202,898.76",
-    },
-  ];
-  */
-
   const reports = [
-    "Monthly Summary.xlsx",
-    "Admin Summary.xlsx",
-    "Processing Log.txt",
-    "Exception Report.xlsx",
+    "A/R Totals PDF",
+    "A/R Log TXT",
   ];
 
   return (
@@ -312,7 +272,7 @@ export default function CompletePage() {
                 <span>{report}</span>
 
               </div>
-
+              {/*
               <Button variant="outline">
 
                 <Download className="mr-2 h-4 w-4" />
@@ -320,15 +280,17 @@ export default function CompletePage() {
                 Download
 
               </Button>
-
+              */}
             </div>
 
           ))}
 
+          {/*
           <Separator />
+          */}
 
           <div className="flex justify-end">
-
+            {/*
             <Button>
 
               <Download className="mr-2 h-4 w-4" />
@@ -336,7 +298,7 @@ export default function CompletePage() {
               Download All Reports
 
             </Button>
-
+            */}
           </div>
 
         </CardContent>

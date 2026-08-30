@@ -19,11 +19,7 @@ export function ThemeProvider({
   defaultTheme?: Theme;
 }) {
 
-  const [theme,setTheme] =
-    useState<Theme>(defaultTheme);
-
-  
-
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
 
   useEffect(() => {
 

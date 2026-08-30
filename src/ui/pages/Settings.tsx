@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
-//import { Textarea } from "@/components/ui/textarea.tsx";
 
 import { toast } from "sonner";
 
@@ -48,6 +47,7 @@ type SettingsInputs = {
   theme: ThemeEnum;
   defaultExportPath: string;
   tmpFolder: string;
+  overwriteExistingFiles: any;
 };
 
 export default function SettingsPage() {
@@ -59,7 +59,7 @@ export default function SettingsPage() {
     defaultValues:{
       theme: ThemeEnum.system,
       defaultExportPath: "",
-      tmpFolder: ""
+      tmpFolder: "",
     }
   });
 
@@ -67,7 +67,7 @@ export default function SettingsPage() {
     //console.log(data);
     window.electron.updateSettings(data);
     //display successful or failure toast 
-    // toast.success("Your application settings have been updated.");
+    toast.success("Your application settings have been updated.");
     window.location.reload();
   }
   
@@ -84,12 +84,8 @@ export default function SettingsPage() {
   // Open a dialog window to pick a folder
   async function openFolderPickerDialog(formInput: keyof SettingsInputs){
       let path = await window.electron.pickFolder();
-      //console.log(path);
       if(path !== null){
-        //defaultOutputFolderRef.current.value = path;
-        //defaultOutputFolderRef.current = path;
-        form.setValue(formInput, path);
-        //console.log(path);
+        form.setValue(formInput, path as SettingsInputs[typeof formInput]);
       }
       return path;
   }
@@ -173,22 +169,39 @@ export default function SettingsPage() {
     );
   }
 
-  function switchField(props: {
+  function SwitchField(props: {
     inputName: keyof SettingsInputs;
     inputLabel: string;
     inputDescription: string;
   }){
+    const inputId = useId();
     return (
-      <div className="flex items-center justify-between">
-        <div>
-          <Label>{props.inputLabel}</Label>
-          <p className="text-sm text-muted-foreground">
-            {props.inputDescription}
-          </p>
-        </div>
-
-        <Switch defaultChecked />
-      </div>
+      <Controller
+        name={props.inputName}
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field className="flex items-center justify-between" data-invalid={fieldState.invalid}>
+            <div>
+              <FieldLabel htmlFor={inputId}>
+                {props.inputLabel}
+              </FieldLabel>
+              <p className="text-sm text-muted-foreground">
+                {props.inputDescription}
+              </p>
+            </div>
+            <div>
+              <Switch 
+                {...field}
+                id={inputId}
+                aria-invalid={fieldState.invalid}
+              />
+            </div>
+            {fieldState.invalid && (
+              <FieldError errors={[fieldState.error]} />
+            )}
+          </Field>
+        )}
+      />
     );
   }
 
@@ -270,7 +283,6 @@ export default function SettingsPage() {
           </CardHeader>
 
           <CardContent className="space-y-5">
-
             <div className="flex items-center justify-between">
               <div>
                 <Label>Overwrite Existing Files</Label>
@@ -356,8 +368,8 @@ export default function SettingsPage() {
               Export Diagnostic Report
             </Button>
 
-            <Button variant="outline">
-              Clear Cache
+            <Button variant="destructive">
+              Clear Jobs Cache
             </Button>
 
           </CardContent>

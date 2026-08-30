@@ -10,7 +10,6 @@ const defaults: AppSettings = {
     process.cwd(),
     'tmp'
   ),
-  autoProcessingEnabled: false,
 };
 
 // 3. Initialize the store (electron-store safely handles production paths automatically)

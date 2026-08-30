@@ -2,10 +2,11 @@ import { BrowserWindow, Menu, app } from 'electron';
 import { ipcWebContentsSend, isDev } from './util.js';
 
 export function createMenu(mainWindow: BrowserWindow) {
+  const isMac = process.platform === 'darwin';
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       {
-        label: process.platform === 'darwin' ? undefined : 'File',
+        label: isMac ? undefined : 'File',
         type: 'submenu',
         submenu: [
           {
@@ -50,6 +51,15 @@ export function createMenu(mainWindow: BrowserWindow) {
           {
             label: 'DevTools',
             click: () => mainWindow.webContents.openDevTools(),
+            visible: isDev(),
+          },
+          {
+            label: 'Toggle Fullscreen',
+            role: 'togglefullscreen',
+          },
+          {
+            label: 'Reload',
+            click: () => mainWindow.webContents.reload(),
             visible: isDev(),
           }
         ],

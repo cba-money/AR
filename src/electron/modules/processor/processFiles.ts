@@ -20,12 +20,9 @@ export async function processARFile(
     monthsToProcess: number[]
 ): Promise<ProcessResult | null> {
     
-    //console.log(`\n${'='.repeat(100)}\nPROCESSING: ${filePath}\n${'='.repeat(100)}`);
-    
     const fileName = path.basename(filePath).replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
     const fileLoc = path.dirname(filePath);
     const companyName = getAdminName(filePath);
-    //const outputPdfPath = filePath.replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
     const outputPdfPath = path.join(
         fileLoc,
         fileName
@@ -35,8 +32,6 @@ export async function processARFile(
     try {
         await workbook.xlsx.readFile(filePath);
     } catch (e) {
-        //console.error("Failed to read Excel file", e);
-        //return null;
         throw new Error("Failed to read Excel file");
     }
 
@@ -45,14 +40,10 @@ export async function processARFile(
 
     const commissionCol = findCommissionColumn(ws);
     if (!commissionCol) {
-        //console.log("✗ No Commission column found");
-        //return null;
         throw new Error("✗ No Commission column found");
     }
-    //console.log(`✓ Commission column: Column ${commissionCol}`);
 
     const yellowCode = getYellowColorCode(ws);
-    //console.log(`✓ Yellow color code identified: ${yellowCode}`);
 
     const commPlus1 = commissionCol + 1;
     const commPlus4 = commissionCol + 4;
@@ -116,8 +107,6 @@ export async function processARFile(
             dateFormat: cellsData[0].format
         });
     }
-
-    //console.log(`✓ Rows kept after filtering: ${dataRows.length}`);
 
     // Sort Data
     const dataForSort: SortableRow[] = dataRows.map((rowData, idx) => {
@@ -209,7 +198,7 @@ tr:nth-child(even) { background-color: #f9f9f9; }
         const cells = rowData.cells;
         const dateVal = cells[0]?.value;
         
-        // ✨ FIXED: Force toLocaleDateString to output the date in UTC format
+        // FIXED: Force toLocaleDateString to output the date in UTC format
         const dateStr = dateVal instanceof Date 
             ? dateVal.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', timeZone: 'UTC' }) 
             : String(dateVal || '');
@@ -252,7 +241,6 @@ tr:nth-child(even) { background-color: #f9f9f9; }
         
         if (fs.existsSync(outputPdfPath)) {
             const pdfSize = fs.statSync(outputPdfPath).size;
-            //console.log(`✓ PDF created: ${path.basename(outputPdfPath)} (${pdfSize.toLocaleString()} bytes)`);
             
             return {
                 company: companyName,
@@ -264,13 +252,9 @@ tr:nth-child(even) { background-color: #f9f9f9; }
                 fileName: outputPdfPath
             };
         } else {
-            //console.log(``);
-            //return null;
             throw new Error('✗ PDF creation failed (File not found after generation)');
         }
     } catch (error) {
-        //console.error(`✗ Error generating PDF:`, error);
-        //return null;
         throw new Error(`✗ Error generating PDF: ${error}`);
     }
 }

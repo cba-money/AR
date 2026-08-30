@@ -1,8 +1,6 @@
 import path from 'path';
 import * as fs from 'fs';
 
-//const os = require('os');
-
 import { app, BrowserWindow, ipcMain, shell, nativeTheme } from 'electron';
 import { ipcMainHandle, 
   ipcMainOn, 
@@ -13,16 +11,11 @@ import { ipcMainHandle,
 } from './util.js';
 
 import { getPreloadPath, getUIPath } from './pathResolver.js';
-import { createTray } from './tray.js';
 import { createMenu } from './menu.js';
 
 import { settingsManager } from './settings.js';
-import { getLatestJob } from './modules/batch/batchStore.js';
-
-//import { BatchTest } from './modules/batch/batchTest.js';
 import { BatchJobRunner } from './lib/batch/jobRunner.js';
 
-import { JsonDatabase } from "./lib/db/json.js";
 import { cwd } from 'process';
 
 import { JSONFilePreset } from 'lowdb/node';
@@ -52,51 +45,14 @@ app.on('ready', () => {
     mainWindow.loadFile(getUIPath());
   }
 
-  //nativeTheme.themeSource = 'dark';
-  //const db = new JsonDatabase(path.join(cwd(), 'db'));
-  /*
-  db.createTable('Test 1', {
-    hello: "World",
-    hool: 123,
-    nice: true,
-    complex: {
-      vis: 1,
-      test: "Test 1..2..3"
-    }
-  }).then((table) => {
-    
-  });
-  */
-
-  /*
-  const defaultData: any = {
-    posts: []
-  };
-
-  async function createData(){
-    const db = await JSONFilePreset('db.json', defaultData);
-    await db.update(({ posts }) => posts.push({
-    hello: "World",
-    hool: 123,
-    nice: true,
-    complex: {
-      vis: 1,
-      test: "Test 1..2..3"
-    }}))
-  }
-  async function getData(){
-    //const data = await db.findById('test-1', '1234');
-    //console.log(data);
-  }
-
-  createData();
-  */
-
   /* IPC Handlers */
 
   ipcMainOn('openFolder', (folderPath) => {
     if(folderPath === "output"){
-      const exportPath = settingsManager.getStore().defaultExportPath;
+      const exportPath = path.join(
+        settingsManager.getStore().defaultExportPath,
+        "export"
+      );
       shell.openPath(exportPath);
       return;
     }
@@ -117,7 +73,6 @@ app.on('ready', () => {
     return await selectLocalFolder(mainWindow);
   });
 
-  createTray(mainWindow);
   handleCloseEvents(mainWindow);
   createMenu(mainWindow);
 });
@@ -127,12 +82,10 @@ ipcMainHandle('getAppVersion', () => {
 });
 
 ipcMainHandle('getEnvironment', () => {
-  return process.env.NODE_ENV || 'Development'; 
+  return process.env.NODE_ENV || 'Release'; 
 });
 
 ipcMainHandle('getOsPlatform', () => {
-  //return process.platform;
-  //return os.platform();
   return process.platform;
 });
 
@@ -269,7 +222,6 @@ ipcMainOn('startBatchJob', async (config) => {
 });
 
 ipcMainHandle('getCurrentJob', async() => {
-  //const latestJob = await getLatestJob();
   if(currentRunner !== null && typeof currentRunner === typeof BatchJobRunner){
     return currentRunner.getJobObjectFull();
   }
@@ -282,6 +234,17 @@ ipcMainHandle('getCurrentJob', async() => {
       'latest-job.json'
   ), defaultDataLatestJob);
   return latestJobDB.data;
+});
+
+ipcMainHandle('getAllJobs', async() => {
+  const defaultDataLatestJob = { job: {} };
+  const allJobsDB = await JSONFilePreset(
+  path.join(
+      'db',
+      'jobs',
+      'jobs.json'
+  ), defaultDataLatestJob);
+  return allJobsDB.data;
 });
 
 ipcMainHandle('getBatchLogs', async (): Promise<ProcessLogEntry[]> => {

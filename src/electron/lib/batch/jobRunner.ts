@@ -94,7 +94,6 @@ export class BatchJobRunner extends EventEmitter {
         //monthRange: string | number[];
     }){
         super();
-        //this.batchId = "";
         // Generate a unique batch ID
         let batchId = uuidv4();
         this.batchId = batchId;
@@ -324,12 +323,10 @@ export class BatchJobRunner extends EventEmitter {
         }
         this.log(`Using export path: ${newExportPath}`);
 
-
-
-        // TODO: Update DB - Add new Job, update "Latest Job"
+        // Update DB with latest job & global Job DB
         await this.updateLatestJob();
         await this.updateJobDB();
-
+        this.log(`Job DB updated.`);
 
         this.log(`Pre-processing complete. Starting main process loop. | Files in queue: ${this.files.length}`);
         
@@ -455,7 +452,6 @@ export class BatchJobRunner extends EventEmitter {
                         fullPath: formatted,
                         type: 'xlsx'
                     } as ProcessedFile);
-                    //this.emit('fileSuccess', { filePath: formatted, fileName: path.basename(formatted) });
                     this.updatePercentage(eachFileIncriment);
 
                     // Process File
@@ -465,11 +461,10 @@ export class BatchJobRunner extends EventEmitter {
                     const companyName = getAdminName(formatted);
 
                     this.log(`Starting processing of file ${fileName}`);
-                    //this.emit('fileStart', { fileName: fileName, filePath: fileLoc, index: i });
                     this.setCurrentFile(fileName, path.join(fileLoc, fileName), i);
 
                     const processed = await processARFile(
-                        formatted, 
+                        formatted,
                         new Date(this.arDate), 
                         extractMonthsAsNumbers(this.monthRange)
                     );

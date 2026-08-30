@@ -34,15 +34,37 @@ export default function Dashboard() {
 
     const [ arToDate, setArToDate ] = useState<Date | undefined>(new Date());
 
-    const [ latestJob, setLatestJob ] = useState({});
+    const [isOver, setIsOver] = useState(false);
+    const [filePath, setFilePath] = useState('');
 
-    useEffect(() => {
-        async function getLatestJob(){
-            const getCurrentJob = await window.electron.getCurrentJob();
-            setLatestJob(latestJob);
+      const handleDragOver = (event: any) => {
+        event.preventDefault()
+        setIsOver(true)
+    }
+
+    const handleDragLeave = () => {
+        setIsOver(false)
+    }
+
+      const handleDrop = (event: any) => {
+        event.preventDefault()
+        setIsOver(false)
+
+        // Capture the dropped file object
+        const files = event.dataTransfer.files
+        if (files.length > 0) {
+        const droppedFile = files[0]
+
+        // Pass the HTML5 file object to the exposed preload utility
+        const absolutePath = window.electron.dropFile(droppedFile);
+        
+        //setFilePath(absolutePath)
+        //console.log('Native file path:', absolutePath);
+        addFile(absolutePath);
+        
+        // Optional: Send this absolute path to main process via ipcRenderer
         }
-        getLatestJob();
-    }, [])
+    }
 
     function addFile(filePath: string) {
         setFiles((prevFiles) => {
@@ -62,9 +84,6 @@ export default function Dashboard() {
     }
 
     async function startProcess(){
-        /*console.log(`${arToDate
-                ? arToDate.toLocaleDateString()
-                : "No date selected"}`);*/
 
         if(arToDate === undefined) return alert("Please select an A/R To Date before starting the process.");
         if(files.length === 0) return alert("Please select at least one file before starting the process.");
@@ -101,7 +120,12 @@ export default function Dashboard() {
 
                     <CardContent>
 
-                    <div className="border-2 border-dashed rounded-xl h-48 flex flex-col justify-center items-center overflow-y-auto">
+                    <div 
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`border-2 border-dashed rounded-xl h-48 flex flex-col justify-center items-center overflow-y-auto ${isOver ? 'border-primary' : 'border-gray-300'}`}
+                    >
 
                         <Upload className="h-10 w-10 text-muted-foreground mb-4" />
 
@@ -114,7 +138,10 @@ export default function Dashboard() {
                                 addFile(newFile);
                             }}>
                             <p className="font-medium">
-                                Drag & Drop Excel Files
+                                {
+                                    isOver ? "Drop file to add..." :
+                                    "Browse or Drag & Drop Excel Files"
+                                }
                             </p>
 
                             <p className="text-sm text-muted-foreground">
@@ -201,6 +228,7 @@ export default function Dashboard() {
 
                 </Card>
 
+                {/*
                 <Card className="col-span-3 dark:bg-gray-800">
 
                     <CardHeader>
@@ -248,23 +276,9 @@ export default function Dashboard() {
                     </CardContent>
 
                 </Card>
+                */}
             </div>
         </div>
     );
 
 }
-
-/*
-<a onClick={() => navigate('/process')}>
-    Process
-</a>
-<a onClick={() => navigate('/process/complete')}>
-    Complete
-</a>
-<Button onClick={async() => {
-    let runs = await window.electron.checkRuns();
-    console.log(runs);
-}}>
-    Check Runs Test
-</Button>
-*/

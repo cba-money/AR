@@ -1,46 +1,25 @@
 const electron = require('electron');
 
 electron.contextBridge.exposeInMainWorld('electron', {
-  /*
-  subscribeStatistics: (callback) =>
-    ipcOn('statistics', (stats) => {
-      callback(stats);
-    }),
-  subscribeChangeView: (callback) =>
-    ipcOn('changeView', (view) => {
-      callback(view);
-    }),
-  getStaticData: () => ipcInvoke('getStaticData'),
-  sendFrameAction: (payload) => ipcSend('sendFrameAction', payload),
-  */
   openFolder: (folderPath?: any) => ipcSend('openFolder', folderPath),
   pickFile: () => ipcInvoke('pickFile'),
   pickFolder: () => ipcInvoke('pickFolder'),
+  dropFile: (file: File) => {
+    return electron.webUtils.getPathForFile(file);
+  },
   getAppVersion: () => ipcInvoke('getAppVersion'),
   getEnvironment: () => ipcInvoke('getEnvironment'),
   getOsPlatform: () => ipcInvoke('getOsPlatform'),
   getCurrentJob: () => ipcInvoke('getCurrentJob'),
+  getAllJobs: () => ipcInvoke('getAllJobs'),
   getFileStatus: () => ipcInvoke('getFileStatus'),
   getSettings: () => ipcInvoke('getSettings'),
   updateSettings: (payload?: any) => ipcSend('updateSettings', payload),
   startBatchJob: (config: BatchConfig) => ipcSend('startBatchJob', config),
   getBatchLogs: () => ipcInvoke("getBatchLogs"),
   checkRuns: () => ipcInvoke("checkRuns"),
-  // Expose a method to subscribe to logs with a cleanup function
-  /*processLog: (callback) => {
-    const subscription = (data: any) => callback(data);
-    ipcOn('processLog', subscription);
-    
-    // Return unsubscribe function to prevent memory leaks in React
-    return () => {
-      electron.ipcRenderer.removeListener('processLog', subscription);
-    };
-  },
-  logSender: (data: string) => ipcSend('processLog', data),
-  */
   subscribeBatchLog: (callback) =>
       ipcOn("batchLog", callback),
-
   subscribeBatchProgress: (callback) =>
       ipcOn("batchProgress", callback),
 } as Window['electron']);

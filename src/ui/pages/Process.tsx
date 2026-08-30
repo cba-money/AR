@@ -48,21 +48,8 @@ export default function ProcessingPage() {
   const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
   const [allFiles, setAllFiles] = useState<string[]>([""]);
 
-  //const [fileStatusList, setFileStatusList]
-
   const consoleLogOutputRef = useRef<HTMLDivElement | null>(null);
 
-  /*
-  useEffect(() => {
-    const handleIncomingLogs = (data: string) => {
-      setLogs([...logs, data]);
-    }
-    const unsubscribe = window.electron.processLog(handleIncomingLogs);
-    return () => {
-      unsubscribe();
-    }
-  })
-  */
  useEffect(() => {
     async function initialize() {
       const existingLogs = await window.electron.getBatchLogs();
@@ -74,17 +61,7 @@ export default function ProcessingPage() {
 
       return unsubscribe;
     }
-    /*
-    async function getCurrentJob(){
-        const loadCurrentJob = await window.electron.getCurrentJob();
-        //console.log(currentJob);
-        setCurrentJob(loadCurrentJob.job);
-        setProgress(loadCurrentJob.job.percentage);
-        setCurrentFile(loadCurrentJob.job.currentFile);
-        setProcessedFiles(loadCurrentJob.job.processedFiles);
-        setAllFiles(loadCurrentJob.job.files);
-    }
-    */
+
    async function getCurrentJob(){
       const loadCurrentJob = await window.electron.getCurrentJob();
       
@@ -112,71 +89,6 @@ export default function ProcessingPage() {
     getCurrentJob();
     updateProgress();
  }, []);
-
- /*
- useEffect(() => {
-    
-  }, []);
-*/
-
-  useEffect(() => {
-    if(progress >= 100){
-      //navigate('/processing/complete');
-    }
-  }, [progress]);
-
-  /*
-  useEffect(() => {
-    if(consoleLogOutputRef.current){
-      //consoleLogOutputRef.current?.lastElementChild?.scrollIntoView({ behavior: 'smooth' });
-      consoleLogOutputRef.current.scrollTo({
-        top: consoleLogOutputRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  }, [logs]);
-  */
-
-  //const progress = 62;
-
-  /*
-  const files = [
-    {
-      name: "Admin A - Weekly 7.xlsx",
-      status: "Completed",
-    },
-    {
-      name: "Admin B - Weekly 7.xlsx",
-      status: "Completed",
-    },
-    {
-      name: "Admin C - Weekly 7.xlsx",
-      status: "Processing",
-    },
-    {
-      name: "Admin D - Weekly 7.xlsx",
-      status: "Waiting",
-    },
-    {
-      name: "Admin E - Weekly 7.xlsx",
-      status: "Waiting",
-    },
-  ];
-  */
-
-  /*
-  const logs = [
-    "[12:18:04] Starting Weekly 7 Merge...",
-    "[12:18:05] Reading Admin A.xlsx",
-    "[12:18:06] Workbook loaded successfully.",
-    "[12:18:08] Merged worksheet 1.",
-    "[12:18:09] Reading Admin B.xlsx",
-    "[12:18:10] Validation successful.",
-    "[12:18:12] Reading Admin C.xlsx",
-    "[12:18:13] Processing formulas...",
-    "[12:18:15] Writing output workbook...",
-  ];
-  */
 
   if (isLoading) {
     return <div className="p-6 text-center">Loading file statuses...</div>;
@@ -226,7 +138,7 @@ export default function ProcessingPage() {
           </CardTitle>
 
           <CardDescription>
-            Processing {processedFiles?.length ?? 0} of {(allFiles?.length ?? 0) * 2} workbooks
+            Processing {processedFiles?.length ?? 1} of {(allFiles?.length ?? 0)} workbooks
           </CardDescription>
 
         </CardHeader>

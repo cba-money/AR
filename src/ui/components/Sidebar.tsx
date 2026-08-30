@@ -34,7 +34,7 @@ export default function Sidebar() {
         title: "Go back to main screen"
       },
       {
-        label: "About A/R Formatter",
+        label: "About A/R Suite",
         icon: <FileSpreadsheet className="mr-2 h-4 w-4" />,
         url: '/about',
         title: "Learn more about this app"

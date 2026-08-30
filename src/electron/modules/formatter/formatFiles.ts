@@ -22,6 +22,8 @@ import {
     Isolates part of Weekly 7 Excel sheet and flattens formulas.
 */
 
+export const FORMATTER_VERSION = "0.3.0";
+
 export async function formatWorkbook(
     inputFile: string,
     dateRangeString: string,

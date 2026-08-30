@@ -2,25 +2,7 @@ interface AppSettings {
   theme: 'system' | 'light' | 'dark';
   defaultExportPath: string;
   tmpFolder: string;
-  autoProcessingEnabled: boolean;
 }
-
-/*
-type Statistics = {
-  cpuUsage: number;
-  ramUsage: number;
-  storageUsage: number;
-};
-
-type StaticData = {
-  totalStorage: number;
-  cpuModel: string;
-  totalMemoryGB: number;
-};
-
-type View = 'CPU' | 'RAM' | 'STORAGE';
-
-*/
 
 type BatchLog = {
     level: "info" | "warn" | "error";
@@ -35,29 +17,12 @@ type BatchProgress = {
     totalFiles: number;
 };
 
-/*
-type EventPayloadMapping = {
-    getAppVersion: string;
-    getSettings: AppSettings;
-    updateSettings: AppSettings;
-    openFolder: string;
-    pickFile: string | null;
-    pickFolder: string | null;
-    startBatchJob: BatchConfig;
-
-    batchLog: BatchLog;
-    batchProgress: BatchProgress;
-};
-*/
-
 type Log = {
   id: Number;
   jobId: string;
   type: 'info' | 'error' | 'warn' = 'info';
   message: string;
 }
-
-//type FrameWindowAction = 'CLOSE' | 'MAXIMIZE' | 'MINIMIZE';
 
 type EventPayloadMapping = {
   getAppVersion: any;
@@ -67,9 +32,11 @@ type EventPayloadMapping = {
   updateSettings: any;
   openFolder: any;
   pickFile: any;
+  dropFile: any;
   pickFolder: any;
   startBatchJob: any;
   getCurrentJob: any;
+  getAllJobs: any;
   getFileStatus: any;
   //processLog: any;
   //logSender: any;
@@ -83,16 +50,6 @@ type UnsubscribeFunction = () => void;
 
 interface Window {
   electron: {
-    /*
-    subscribeStatistics: (
-      callback: (statistics: Statistics) => void
-    ) => UnsubscribeFunction;
-    getStaticData: () => Promise<StaticData>;
-    subscribeChangeView: (
-      callback: (view: View) => void
-    ) => UnsubscribeFunction;
-    sendFrameAction: (payload: FrameWindowAction) => void;
-    */
     getAppVersion: () => any;
     getEnvironment: () => any;
     getOsPlatform: () => any;
@@ -100,18 +57,14 @@ interface Window {
     getSettings: () => any;
     openFolder: (folderPath: any) => void;
     pickFile: () => any;
+    dropFile: (file: any) => any;
     pickFolder: () => any;
     startBatchJob: (config: BatchConfig) => void;
     getCurrentJob: () => any;
+    getAllJobs: () => any;
     getBatchLogs: () => any;
     getFileStatus: () => any;
     checkRuns: () => any;
-    /*
-    processLog: (
-      callback: (data: any) => void
-    ) => UnsubscribeFunction;
-    logSender: (data: string) => any;
-    */
     subscribeBatchLog(
         callback: (log: ProcessLogEntry) => void
     ): UnsubscribeFunction;
@@ -133,15 +86,6 @@ interface ProcessLogEntry{
     type: 'info' | 'error' | 'warn';
     message: string;
 }
-
-/*
-interface ProcessedFile {
-  admin: string;
-  status: "Not Started" | "Processing" | "Completed" | "Failed" | "Cancelled";
-  fileName: string;
-  filePath: string;
-}
-*/
 
 type JobStatus =
     | 'Not Started'
@@ -200,13 +144,6 @@ interface ProcessedInputFile{
   index: number;
   status: JobStatus;
 }
-
-/*
-interface ProcessingJobs {
-  latestJob: string;
-  jobs: ProcessingJob[];
-}
-*/
 
 interface IProcessFile {
   fileName: string;
