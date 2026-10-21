@@ -69,6 +69,39 @@ export async function processARFile(
         if (!isYellow) continue;
 
         let futureDeducted = false;
+
+
+        // Hotfix for DEDUCTED date parsing and comparison
+        const weekAdjusted = String(
+            ws.getRow(rowNum).getCell(13).text ?? ""
+        ).trim();
+
+        const deductedMatch = weekAdjusted.match(
+        /DEDUCTED\s+(\d{1,2})\/(\d{1,2})\/(\d{2,4})/i
+        );
+
+        if (deductedMatch) {
+        const month = Number(deductedMatch[1]);
+        const day = Number(deductedMatch[2]);
+        let year = Number(deductedMatch[3]);
+
+        if (year < 100) {
+            year += year <= 68 ? 2000 : 1900;
+        }
+
+        const deductionTime = Date.UTC(year, month - 1, day);
+
+        const cutoffTime = Date.UTC(
+            givenDate.getUTCFullYear(),
+            givenDate.getUTCMonth(),
+            givenDate.getUTCDate()
+        );
+
+        if (deductionTime <= cutoffTime) {
+            continue;
+        }
+         // END Hotfix for DEDUCTED date parsing and comparison
+}
         const colIValue = cellI.value ? String(cellI.value) : '';
         const colFValue = cellF.value;
 

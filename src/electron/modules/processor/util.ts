@@ -14,6 +14,28 @@ export function getAdminName(inputFile: string): string {
     return "UNKNOWN";
 }
 
+export function getDeductionAndPaybackDates(status: string) {
+  const normalized = status.toUpperCase();
+
+  const deductedMatch = normalized.match(
+    /DEDUCTED\s+(\d{1,2}\/\d{1,2}\/\d{2,4})/
+  );
+
+  const paidBackMatch = normalized.match(
+    /PAID\s+BACK\s+(\d{1,2}\/\d{1,2}\/\d{2,4})/
+  );
+
+  return {
+    deductionDate: deductedMatch
+      ? parseDateString(deductedMatch[1])
+      : null,
+
+    paybackDate: paidBackMatch
+      ? parseDateString(paidBackMatch[1])
+      : null
+  };
+}
+
 /**
  * Parses a date string formatted as MM/DD/YY or MM/DD/YYYY in UTC
  */
