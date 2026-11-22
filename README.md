@@ -3,6 +3,30 @@ The A/R system currently works with two applications, the A/R Formatter and the 
 
 ---
 
+# Legacy Parity
+
+The desktop suite must produce the same reports as the two legacy tools it replaces
+([ar-formatter](https://github.com/tyler-ruff-cba/ar-formatter) v1.0.1 and
+[ar-app](https://github.com/tyler-ruff-cba/ar-app) v2.1.2a).
+
+* `src/electron/modules/formatter` is a port of `processor/excelProcessor.js`.
+* `src/electron/modules/processor/buildReport.ts` is a line-for-line port of
+  `process_excel_to_pdf()` in `app.py`. The matching Python statement is quoted above each block.
+* `src/electron/modules/processor/pyCompat.ts` reproduces the Python / openpyxl behaviour the
+  legacy script depends on (number formatting, rounding, string comparison, date parsing, ...).
+
+Rules of thumb:
+
+* Change the business rules in the legacy script and here together, or not at all.
+* Run `tools/parity/run.sh` (see [tools/parity](tools/parity/README.md)) before every release. It
+  runs both pipelines on the same workbooks and fails if a single character of a report differs.
+* `LEGACY_LOCAL_TIME_MONTHS` in `modules/formatter/utils.ts` keeps one known legacy quirk on
+  purpose: contract months are read in the PC's local time zone, so on a US PC a contract dated
+  the 1st of a month counts toward the previous month. Set it to `false` for calendar-correct
+  months; the output will then intentionally differ from the legacy tools.
+
+---
+
 # A/R Desktop Suite – Unified Development Plan
 ## Project Overview
 

@@ -10,6 +10,31 @@ export function buildMonthRangeString(monthRange: string[]): string {
   return fullString;
 }
 
+/**
+ * Parses the A/R date ("MM/DD/YYYY") the way the legacy app does
+ * (datetime.strptime(value, "%m/%d/%Y")): a calendar date with no time zone.
+ *
+ * The result is midnight UTC so it compares correctly against spreadsheet dates, which
+ * ExcelJS also reports as midnight UTC. `new Date("MM/DD/YYYY")` must not be used for
+ * this: it yields local midnight, which is hours away from the cell values.
+ */
+export function parseArDate(dateStr: string): Date {
+  const match = /^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*$/.exec(dateStr);
+  if (!match) {
+    throw new Error(`Invalid A/R date "${dateStr}". Expected MM/DD/YYYY.`);
+  }
+
+  const month = parseInt(match[1], 10);
+  const day = parseInt(match[2], 10);
+  const year = parseInt(match[3], 10);
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+    throw new Error(`Invalid A/R date "${dateStr}". Expected MM/DD/YYYY.`);
+  }
+  return date;
+}
+
 export function getMonthRange(dateStr: string, monthsBack: number = 3): string[] {
   const [monthStr, , yearStr] = dateStr.split('/');
 
