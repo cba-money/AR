@@ -447,3 +447,12 @@ Multiple reports processed simultaneously where system resources permit.
 * Package the application using Electron Builder for Windows (and optionally macOS).
 * Include the Python runtime and required dependencies in the installer.
 * Verify the application operates fully offline with no external services required.
+
+## Testing Formatter/Processor Script Alone
+TLDR:
+```sh
+npm install
+INPUTS="/path/to/weekly7" ARDATE=07/31/2026 tools/parity/run.sh real
+```
+
+- To learn more, see the [/tools/parity/primitives/README.md](/tools/parity/primitives/README.md) file.
