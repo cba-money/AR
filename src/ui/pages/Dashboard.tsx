@@ -90,7 +90,7 @@ export default function Dashboard() {
 
         window.electron.startBatchJob({
             files: files,
-            arDate: arToDate.toLocaleDateString()
+            arDate: arToDate.toLocaleDateString('en-US')
         } as BatchConfig);
         
         navigate('/process');

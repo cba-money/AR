@@ -12,5 +12,7 @@
     "skipLibCheck": true,
     // add global types
     "types": ["../../types"]
-  }
+  },
+  // unit tests run with vitest and are not shipped
+  "exclude": ["./**/*.test.ts"]
 }

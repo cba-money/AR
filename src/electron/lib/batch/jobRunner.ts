@@ -14,6 +14,7 @@ import {
   extractMonthsAsNumbers,
   generateLogEntry,
   buildMonthRangeString,
+  parseArDate,
   wait
 } from './util.js';
 
@@ -24,8 +25,8 @@ import {
 } from './../../modules/formatter/utils.js';
 
 import {
-    getAdminName
-} from './../../modules/processor/util.js';
+    extractCompanyName
+} from './../../modules/processor/buildReport.js';
 
 import { generateTotals } from './../../modules/totals/generateTotals.js';
 import { formatWorkbook } from "../../modules/formatter/formatFiles.js";
@@ -458,14 +459,14 @@ export class BatchJobRunner extends EventEmitter {
 
                     const fileName = path.basename(formatted).replace('.xlsx', '-PROCESSED.pdf').replace('.csv', '-PROCESSED.pdf').replace(/ /g, "-");
                     const fileLoc = path.dirname(formatted);
-                    const companyName = getAdminName(formatted);
+                    const companyName = extractCompanyName(formatted);
 
                     this.log(`Starting processing of file ${fileName}`);
                     this.setCurrentFile(fileName, path.join(fileLoc, fileName), i);
 
                     const processed = await processARFile(
                         formatted,
-                        new Date(this.arDate), 
+                        parseArDate(this.arDate),
                         extractMonthsAsNumbers(this.monthRange)
                     );
 
@@ -504,8 +505,11 @@ export class BatchJobRunner extends EventEmitter {
                     this.fileStatus[i].status = "Completed";
                     successCount++;
                 } catch (err){
+                    // A failed file is left out of the totals sheet, so it must be visible in the log.
+                    const reason = err instanceof Error ? err.message : String(err || 'Unknown Error');
+                    this.log(`Failed to process ${path.basename(file)}: ${reason}`, 'error');
                     this.fileStatus[i].status = "Failed";
-                    this.emit('fileError', { filePath: file, error: err || 'Unknown Error' });
+                    this.emit('fileError', { filePath: file, error: reason });
                     failCount++;
                 }
             }

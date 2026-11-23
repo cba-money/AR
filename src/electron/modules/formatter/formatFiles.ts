@@ -12,17 +12,21 @@ import {
     copyCell,
     parseMonthRanges,
     excelDateToJSDate,
+    getReportMonthKey,
     isYellowColor,
     rowContainsYellow
  } from './utils.js';
 
 /*
     A/R Formatter
-    v.0.3.0
+    v.0.3.1
     Isolates part of Weekly 7 Excel sheet and flattens formulas.
+
+    Port of processWorkbook() in ar-formatter/processor/excelProcessor.js (v1.0.1).
+    Keep the two in step: the processor's output depends on exactly which rows are kept here.
 */
 
-export const FORMATTER_VERSION = "0.3.0";
+export const FORMATTER_VERSION = "0.3.1";
 
 export async function formatWorkbook(
     inputFile: string,
@@ -100,6 +104,15 @@ export async function formatWorkbook(
                             outputHeader.getCell(col)
                         );
                     }
+                    outputHeader.height = headerRow.height;
+
+                    newestSheet!.columns.forEach(
+                        (column, index) => {
+                            outputSheet.getColumn(index + 1).width =
+                                column.width;
+                        }
+                    );
+
                     headerWritten=true;
                 }
                 return;
@@ -115,7 +128,7 @@ export async function formatWorkbook(
             }
 
             const monthKey =
-                `${reportDate.getUTCMonth()+1}/${reportDate.getUTCFullYear()}`;
+                getReportMonthKey(reportDate);
 
             if(!allowedMonths.has(monthKey)){
                 return;
@@ -179,7 +192,7 @@ export async function formatWorkbook(
     };
 
     titleRow.alignment = {
-        horizontal:"center"
+        horizontal:"left"
     };
 
     outputWorkbook.calcProperties = {

@@ -205,6 +205,34 @@ export function parseMonthRanges(
     return allowed;
 }
 
+/*
+    Which clock decides the month a contract date belongs to.
+
+    Spreadsheet dates are read as midnight UTC. The legacy formatter (ar-formatter v1.0.1)
+    reads the month with getMonth()/getFullYear(), i.e. in the PC's LOCAL time zone. On a PC
+    set to US Eastern time, midnight UTC is 7 or 8 PM the evening before, so every contract
+    dated the 1st of a month is treated as belonging to the PREVIOUS month:
+
+        range 4,5,6,7  ->  contracts dated 4/1 are left out
+                           contracts dated 8/1 are let in (the processor then rejects the
+                           whole file with "VERIFICATION FAILED - Totals don't match!")
+
+    true  = identical to the legacy formatter (result depends on the PC's time zone)
+    false = calendar-correct: 4/1 counts as April everywhere. This is what the comment in
+            the legacy source says was intended, but it does NOT match the legacy output.
+*/
+export const LEGACY_LOCAL_TIME_MONTHS = true;
+
+export function getReportMonthKey(
+    reportDate: Date,
+    legacyLocalTime: boolean = LEGACY_LOCAL_TIME_MONTHS
+): string {
+
+    return legacyLocalTime
+        ? `${reportDate.getMonth() + 1}/${reportDate.getFullYear()}`
+        : `${reportDate.getUTCMonth() + 1}/${reportDate.getUTCFullYear()}`;
+}
+
 export function excelDateToJSDate(
     value: ExcelJS.CellValue
 ): Date | null {
@@ -237,8 +265,9 @@ export function excelDateToJSDate(
         return value.result;
     }
 
+    // new Date(value), exactly as the legacy formatter does
     const parsed =
-        new Date(value.toString());
+        new Date(value as unknown as string);
 
 
     return isNaN(parsed.getTime())
